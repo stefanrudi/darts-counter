@@ -1,8 +1,7 @@
-import WebSocket from "ws";
+import { WebSocket } from 'ws';
 import { games, players } from "../models/Store";
 import { addPlayerToGame, createGame, moveToNextPlayer, processThrow } from "../services/GameService";
 import { Game, Player } from "../utils/types";
-import { error } from "console";
 
 
 /**
