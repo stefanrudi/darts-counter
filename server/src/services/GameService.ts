@@ -1,8 +1,7 @@
-import { v4 as uuidv4 } from "uuid";
 import { Game, GameType, Score, Position, X01Score } from "../utils/types";
-import { games, players } from "../models/Store";
 import { gameModel } from "../models/Game";
 import { findLastIndex } from "../utils/utils";
+import { playerModel } from "../models/Player";
 
 /**
  * Create a new game using the GameModle singleton
@@ -20,20 +19,7 @@ export function createGame(gameType: GameType = "501"): Game {
  * @returns
  */
 export function addPlayerToGame(gameId: string, playerId: string): Game | null {
-  const game: Game | undefined = games.get(gameId);
-  if (!game) return null;
-
-  if (!game.players.includes(playerId)) {
-    game.players.push(playerId);
-    game.scores[playerId] = initializeScore(game.gameType);
-  }
-
-  if (game.players.length >= 2 && game.status === "waiting") {
-    game.status = "playing";
-    game.currentPlayerId = game.players[0];
-  }
-
-  return game;
+  return gameModel.addPlayer(gameId, playerId);
 }
 
 /**
@@ -57,7 +43,7 @@ export function processThrow(
   playerId: string,
   dartPosition: Position
 ): { game: Game; dartScore: number; validThrow: boolean } | null {
-  const game: Game | undefined = games.get(gameId);
+  const game: Game | undefined = gameModel.getGame(gameId);
   if (!game || game.status !== "playing" || game.currentPlayerId != playerId) return null;
 
   // Calculate score from dartPosition
@@ -203,7 +189,7 @@ export function moveToNextPlayer(game: Game): void {
     // Skip disconnected players
     let checkedPlayers = 0;
     while (checkedPlayers < game.players.length) {
-      const player = players.get(game.currentPlayerId);
+      const player = playerModel.getPlayer(game.currentPlayerId);
       if (player && player.isConnected) {
         break;
       }

@@ -1,7 +1,8 @@
 import { WebSocket } from 'ws';
-import { games, players } from "../models/Store";
 import { addPlayerToGame, createGame, moveToNextPlayer, processThrow } from "../services/GameService";
 import { Game, Player } from "../utils/types";
+import { gameModel } from '../models/Game';
+import { playerModel } from '../models/Player';
 
 
 /**
@@ -80,23 +81,23 @@ function handleThrowDart(payload: any, playerId: string): void {
 }
 
 function handleUpdateName(payload: any, playerId: string): void {
-    const { name } = payload;
-    const player: Player | undefined = players.get(playerId);
-    if (player) {
-        player.name = name;
+    // const { name } = payload;
+    // const player: Player | undefined = players.get(playerId);
+    // if (player) {
+    //     player.name = name;
 
-        // Update all games this player is in
-        for (const game of games.values()) {
-            if (game.players.includes(playerId)) {
-                broadcastGameState(game);
-            }
-        }
-    }
+    //     // Update all games this player is in
+    //     for (const game of games.values()) {
+    //         if (game.players.includes(playerId)) {
+    //             broadcastGameState(game);
+    //         }
+    //     }
+    // }
 }
 
 function handleLeaveGame(payload: any, playerId: string): void {
     const { gameId } = payload;
-    const game = games.get(gameId);
+    const game = gameModel.getGame(gameId);
 
     if (game) {
         // Remove player from game
@@ -106,7 +107,7 @@ function handleLeaveGame(payload: any, playerId: string): void {
     
             // Remove game when no players left
             if (game.players.length === 0) {
-                games.delete(gameId);
+                gameModel.deleteGame(gameId);
                 broadcastAvailableGames();
             } else {
                 // If it was this player's turn, move to next player
@@ -118,14 +119,14 @@ function handleLeaveGame(payload: any, playerId: string): void {
 
 function handleClientPong(playerId: string): void {
     // Client-initiated pong (heartbeat response)
-    const player: Player | undefined = players.get(playerId);
+    const player: Player | undefined = playerModel.getPlayer(playerId);
     updatePlayerConnection(playerId);
 }
 
 function handleReconnect(payload: any, playerId: string, ws: WebSocket): void {
     // Player is reconnecting with their ID
     const { reconnectId } = payload;
-    const existingPlayer: Player | undefined = players.get(reconnectId);
+    const existingPlayer: Player | undefined = playerModel.getPlayer(reconnectId);
 
     // Reconnect ID not found
     if (!existingPlayer) {
@@ -153,13 +154,13 @@ function handleReconnect(payload: any, playerId: string, ws: WebSocket): void {
     }));
 
     // Remove temporary player ID
-    players.delete(playerId);
+    playerModel.deletePlayer(playerId);
 
     // Re-assign playerId to the reconnected ID for the rest of this handler
     playerId = reconnectId;
 
     // Send active games this player is part of
-    const playerGames = Array.from(games.values()).filter(g => g.players.includes(playerId));
+    const playerGames = Array.from(gameModel.getAllGames()).filter(g => g.players.includes(playerId));
 
     ws.send(JSON.stringify({
         type: "active_games",
@@ -181,7 +182,7 @@ function handleReconnect(payload: any, playerId: string, ws: WebSocket): void {
 
 // Broadcast available games to all waiting clients
 function broadcastAvailableGames(): void{
-    const availableGames = Array.from(games.values()).filter(g => g.status === "waiting")
+    const availableGames = Array.from(gameModel.getAllGames()).filter(g => g.status === "waiting")
         .map(({ id, players, gameType, createdAt }) => ({
             id, 
             playerCount: players.length,
@@ -189,7 +190,7 @@ function broadcastAvailableGames(): void{
             createdAt
         }));
 
-    for (const [playerId, player] of players.entries()){
+    for (const [playerId, player] of playerModel.getAllPlayerIds()){
         if (player.ws.readyState === WebSocket.OPEN) {
             try {
                 player.ws.send(
@@ -214,8 +215,8 @@ function broadcastGameState(game: Game): void {
         id: game.id,
         players: game.players.map((id) => ({
             id,
-            name: players.get(id)?.name || 'Unknown Player',
-            isConnected: players.get(id)?.isConnected || false,
+            name: playerModel.getPlayer(id)?.name || 'Unknown Player',
+            isConnected: playerModel.getPlayer(id)?.isConnected || false,
             score: game.scores[id]
         })),
         gameType: game.gameType,
@@ -226,7 +227,7 @@ function broadcastGameState(game: Game): void {
     };
 
     for (const playerId of game.players) {
-        const player = players.get(playerId);
+        const player = playerModel.getPlayer(playerId);
         if (player && player.ws.readyState === WebSocket.OPEN) {
             try {
                 player.ws.send(
@@ -250,15 +251,15 @@ function broadcastGameState(game: Game): void {
  */
 export function handlePlayerDisconnect(playerId: string, removePlayer: boolean): void {
     // Update player status
-    const player: Player | undefined = players.get(playerId);
+    const player: Player | undefined = playerModel.getPlayer(playerId);
     if (player) {
         player.isConnected = false;
 
         // Remove player if specified
-        if (removePlayer) players.delete(playerId);
+        if (removePlayer) playerModel.deletePlayer(playerId);
 
         // Update all games this player is in
-        for (const game of games.values()) {
+        for (const game of gameModel.getAllGames()) {
             if (game.players.includes(playerId)) {
                 // If it's disconnected player's turn, move to next player
                 if (game.currentPlayerId === playerId && game.status === "playing") {
@@ -273,7 +274,7 @@ export function handlePlayerDisconnect(playerId: string, removePlayer: boolean):
 
                         // If no players left, remove game
                         if (game.players.length === 0) {
-                            games.delete(game.id);
+                            gameModel.deleteGame(game.id);
                         } else {
                             broadcastGameState(game);
                         }
@@ -294,7 +295,7 @@ export function handlePlayerDisconnect(playerId: string, removePlayer: boolean):
  * @param playerId 
  */
 export function updatePlayerConnection(playerId: string): void {
-    const player: Player | undefined = players.get(playerId);
+    const player: Player | undefined = playerModel.getPlayer(playerId);
     if (player) {
         player.lastPing = Date.now();
         player.isConnected = true;

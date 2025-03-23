@@ -110,8 +110,7 @@ export const useWebSocket = () => {
     }
 
     // Return a cleanup function
-     // Return a cleanup function
-     return () => {
+    return () => {
       if (socketRef.current) {
         try {
           socketRef.current.close(1000, "Component unmounting");
@@ -120,13 +119,13 @@ export const useWebSocket = () => {
         }
         socketRef.current = null;
       }
-      
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
     };
-  }, []);  
+  }, []);
 
   // Send message to server (with queue for reconnecting state)
   const messageQueueRef = useRef<Array<{ type: string; payload: any }>>([]);
@@ -158,7 +157,10 @@ export const useWebSocket = () => {
 
   // Process queued messages when connection is established
   useEffect(() => {
-    if (status === "connected" || socket && messageQueueRef.current.length > 0) {
+    if (
+      status === "connected" ||
+      (socket && messageQueueRef.current.length > 0)
+    ) {
       console.log(
         `Processing ${messageQueueRef.current.length} queued messages`
       );

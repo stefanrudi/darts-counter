@@ -1,6 +1,6 @@
 import { handlePlayerDisconnect } from "../controllers/wsController";
-import { players } from "../models/Store";
 import WebSocket from "ws";
+import { playerModel } from "../models/Player";
 
 const PING_INTERVAL = 30000; // 30 seconds
 const PING_TIMEOUT = 10000; // 10 seconds
@@ -15,7 +15,7 @@ export function setupHeartbeat(): void {
         const now = Date.now();
 
         // Send ping to all connected clients
-        for (const [playerId, player] of players.entries()) {
+        for (const [playerId, player] of playerModel.getAllPlayerIds()) {
             // Skip already disconnected players
             if (!player.isConnected) continue;
 

@@ -5,10 +5,9 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import { Player } from "./utils/types";
-import { players } from "./models/Store";
 import { handleMessage, handlePlayerDisconnect, updatePlayerConnection } from "./controllers/wsController";
 import { setupHeartbeat } from "./services/WebSocketService";
+import { playerModel } from "./models/Player";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,12 +25,7 @@ const wss: WebSocketServer = new WebSocketServer({ server });
 // WebSocket connection handler
 wss.on("connection", (ws: WebSocket) => {
   const playerId = uuidv4();
-  players.set(playerId, {
-    ws,
-    name: `Player ${players.size + 1}`,
-    isConnected: true,
-    lastPing: Date.now(),
-  });
+  playerModel.createPlayer(playerId, ws);
 
   // Send player their ID
   ws.send(

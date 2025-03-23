@@ -1,13 +1,12 @@
 import { Player } from "../utils/types";
-import {v4 as uuidv4} from 'uuid';
-import { WebSocket } from 'ws';
+import { v4 as uuidv4 } from "uuid";
+import { WebSocket } from "ws";
 
 export class PlayerModel {
   private players: Map<string, Player> = new Map();
 
   // Create a new player
-  create(ws: WebSocket, name?: string): { player: Player; id: string } {
-    const playerId = uuidv4();
+  createPlayer(playerId: string, ws: WebSocket, name?: string): Player {
     const player: Player = {
       ws,
       name: name || `Player ${this.players.size + 1}`,
@@ -16,7 +15,19 @@ export class PlayerModel {
     };
 
     this.players.set(playerId, player);
-    return { player, id: playerId };
+    return player;
+  }
+
+  getPlayer(playerId: string): Player | undefined {
+    return this.players.get(playerId);
+  }
+
+  getAllPlayerIds() {
+    return this.players.entries();
+  }
+
+  deletePlayer(playerId: string): void {
+    this.players.delete(playerId);
   }
 }
 
