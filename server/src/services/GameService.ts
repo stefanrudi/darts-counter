@@ -1,7 +1,7 @@
-import { Game, GameType, Score, Position, X01Score } from "../utils/types";
 import { gameModel } from "../models/Game";
 import { findLastIndex } from "../utils/utils";
 import { playerModel } from "../models/Player";
+import { GameType, Game, Score, Position, X01Score } from "@darts-counter/shared";
 
 /**
  * Create a new game using the GameModle singleton

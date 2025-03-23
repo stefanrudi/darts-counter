@@ -1,10 +1,4 @@
-import { WebSocket } from 'ws';
-export interface Position {
-  x: number;
-  y: number;
-}
-
-export interface X01Score {    
+export interface X01Score {
   score: number;
   throws: { score: number; valid: boolean; bust: boolean }[];
   lastScore: number;
@@ -30,19 +24,10 @@ export interface Game {
   winner?: string;
 }
 
-
 export interface GameThrow {
-    playerId: string;
-    position: Position;
-    score: number;
-    timestamp: number;
-}
-
-export interface Player {
-  ws: WebSocket;
-  name: string;
-  isConnected: boolean;
-  lastPing: number;
+  playerId: string;
+  score: number;
+  timestamp: number;
 }
 
 export interface AvailableGame {
@@ -52,4 +37,4 @@ export interface AvailableGame {
   createdAt: number;
 }
 
-export type GameType = "501" | "around-the-clock";
+export type GameType = "501" | "around-the-clock"; 

@@ -13,6 +13,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@darts-counter/shared": "file:../shared",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "uuid": "^11.1.0",
@@ -22,7 +23,7 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.10",
     "@types/uuid": "^10.0.0",
-    "@types/ws": "^8.18.0",    
+    "@types/ws": "^8.18.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }

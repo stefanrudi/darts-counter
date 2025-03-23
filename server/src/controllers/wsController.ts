@@ -1,9 +1,8 @@
 import { WebSocket } from 'ws';
 import { addPlayerToGame, createGame, moveToNextPlayer, processThrow } from "../services/GameService";
-import { Game, Player } from "../utils/types";
 import { gameModel } from '../models/Game';
 import { playerModel } from '../models/Player';
-
+import { Game, Player } from '@darts-counter/shared';
 
 /**
  * Handler responsible for incoming messages 
