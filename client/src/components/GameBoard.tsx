@@ -1,4 +1,3 @@
-import React from "react";
 import Dartboard from "./Dartboard";
 
 const GameBoard = ({ game, playerId, leaveGame, onThrow }) => {

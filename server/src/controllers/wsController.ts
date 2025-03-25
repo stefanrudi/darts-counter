@@ -13,7 +13,7 @@ import { Game, Player } from '@darts-counter/shared';
 export function handleMessage(ws: WebSocket, message: string, playerId: string){
     try {
         const data = JSON.parse(message);
-        updatePlayerConnection(playerId);
+        //updatePlayerConnection(playerId);
 
         switch (data.type) {
             case "create_game":
@@ -118,8 +118,8 @@ function handleLeaveGame(payload: any, playerId: string): void {
 
 function handleClientPong(playerId: string): void {
     // Client-initiated pong (heartbeat response)
-    const player: Player | undefined = playerModel.getPlayer(playerId);
-    updatePlayerConnection(playerId);
+    // const player: Player | undefined = playerModel.getPlayer(playerId);
+    // updatePlayerConnection(playerId);
 }
 
 function handleReconnect(payload: any, playerId: string, ws: WebSocket): void {

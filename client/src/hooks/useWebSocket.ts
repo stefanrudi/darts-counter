@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WebSocketStatus } from "../utils/types";
+import { WebSocketStatus } from "@darts-counter/shared/client"
 
 export const useWebSocket = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);

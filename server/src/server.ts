@@ -45,7 +45,7 @@ wss.on("connection", (ws: WebSocket) => {
 });
 
 // Initialize heartbeat mechanism
-setupHeartbeat();
+//setupHeartbeat();
 
 
 // Start the server
