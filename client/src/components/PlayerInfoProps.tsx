@@ -1,24 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 
-interface PlayerInfoProps {
-  playerName: string;
-  updateName: (name: string) => void;
-}
+export function PlayerInfo() {
+  const [nickname, setNickname] = useState("");
 
-const PlayerInfo: React.FC<PlayerInfoProps> = ({ playerName, updateName }) => {
   return (
     <div className="player-info">
       <label>
         Your Name:
         <input
           type="text"
-          value={playerName}
-          onChange={(e) => updateName(e.target.value)}
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
           maxLength={20}
         />
       </label>
     </div>
   );
 };
-
-export default PlayerInfo;

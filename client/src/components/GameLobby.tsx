@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { GameType, X01Variant } from "../../../server/src/game/types";
-import { useGameStore } from "../store/gameStore";
 import { socketService } from "../services/socketService";
 
 interface GameLobbyProps {
@@ -61,6 +60,18 @@ export function GameLobby() {
 
   return (
     <div className="game-lobby">
+      <div className="player-info">
+      <label>
+        Your Name:
+        <input
+          type="text"
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+          maxLength={20}
+        />
+      </label>
+    </div>
+    
       <h2>Game Lobby</h2>
 
       <div className="create-game">

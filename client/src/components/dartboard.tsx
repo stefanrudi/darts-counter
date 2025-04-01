@@ -1,26 +1,32 @@
 import React, { useState } from "react";
+import { socketService } from "../services/socketService";
 
-const Dartboard = ({ onThrow, readOnly = false }) => {
+interface DartboardProps {
+  gameId: string;
+  isMyTurn: boolean;
+  readOnly: boolean;
+}
+
+export function Dartboard({ gameId, isMyTurn, readOnly }: DartboardProps) {
   const [lastPosition, setLastPosition] = useState(null);
 
-  // Dartboard properties - using standard proportions
-  const bullseyeRadius = 12.5; // Double bull (red)
-  const singleBullRadius = 31.25; // Single bull (green)
+  // Dartboard properties - using hardcoded values for simplicity
+  const bullseyeRadius = 12.5;
+  const singleBullRadius = 31.25;
   const tripleRingInner = 107;
   const tripleRingOuter = 115;
   const doubleRingInner = 162;
   const doubleRingOuter = 170;
-  const boardEdge = 175; // Small buffer outside double ring
-  const missableArea = 240; // Expanded area where misses can be recorded
+  const boardEdge = 175;
+  const missableArea = 240;
 
   // Color schemes for the dartboard
   const boardColors = ["#181818", "#F0F0F0"]; // Black and off-white for contrast
   const ringColors = ["#0AAA22", "#B91622"]; // Green and red for the rings
 
-  // Define the 20 sections of the dartboard - starting with 20 at the top (12 o'clock)
-  // Dartboard numbers in clockwise order: 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5
+  // Define the 20 sections of the dartboard - starting with 20 at the top (clockwise order)
   const scores = [
-    20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5,
+    20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5
   ];
   const sections = [];
 
@@ -32,8 +38,11 @@ const Dartboard = ({ onThrow, readOnly = false }) => {
     sections.push({ startAngle, endAngle, score: scores[i] });
   }
 
-  const handleClick = (e) => {
-    if (readOnly) return;
+  const handleClick = (e: any) => {
+    if (!isMyTurn || readOnly) {
+      console.log(`Cannot throw: isMyTurn=${isMyTurn}, disabled=${readOnly}`);
+      return;
+    }
 
     // Get click coordinates relative to the center of the board
     const rect = e.currentTarget.getBoundingClientRect();
@@ -46,8 +55,9 @@ const Dartboard = ({ onThrow, readOnly = false }) => {
     const distance = Math.sqrt(x * x + y * y);
     if (distance <= missableArea) {
       setLastPosition({ x, y });
-      // Send throw data to parent component
-      onThrow({ x, y });
+      const segment = calculateSegment();
+      console.log(`Sending throw: ${segment} for game ${gameId}`);      
+      socketService.throwDart({ gameId, segment });
     }
   };
 
@@ -84,6 +94,41 @@ const Dartboard = ({ onThrow, readOnly = false }) => {
       }
     } else if (distance <= missableArea) {
       return 0; // Missed the board but within missable area
+    }
+
+    return null; // Outside clickable area
+  };
+
+  const calculateSegment = () => {
+    const { x, y } = lastPosition;
+    const distance = Math.sqrt(x * x + y * y);
+
+    // Calculate angle in radians, adjust to make 20 at top
+    let angle = Math.atan2(y, x) + Math.PI / 2; // Add π/2 to align with dartboard orientation
+    if (angle < 0) angle += 2 * Math.PI;
+
+    // Adjust angle to match the section orientation
+    angle = (angle + (9 * Math.PI) / 180) % (2 * Math.PI);
+
+    // Determine section (0-19)
+    const sectionIndex = Math.floor((angle * 180) / Math.PI / 18) % 20;
+    const baseScore = scores[sectionIndex];
+
+    // Determine score multiplier based on distance from center
+    if (distance <= bullseyeRadius) {
+      return "BULL"; // Bullseye (Double Bull)
+    } else if (distance <= singleBullRadius) {
+      return "25"; // Single Bull
+    } else if (distance <= boardEdge) {
+      if (distance >= tripleRingInner && distance <= tripleRingOuter) {
+        return `T${baseScore}`; // Triple
+      } else if (distance >= doubleRingInner && distance <= doubleRingOuter) {
+        return `D${baseScore}`; // Double
+      } else {
+        return "baseScore"; // Single
+      }
+    } else if (distance <= missableArea) {
+      return "MISS"; // Missed the board but within missable area
     }
 
     return null; // Outside clickable area
@@ -320,6 +365,6 @@ const Dartboard = ({ onThrow, readOnly = false }) => {
       `}</style>
     </div>
   );
-};
+}
 
 export default Dartboard;

@@ -1,12 +1,12 @@
 import { useEffect } from "react";
-import GameLobby from "./components/GameLobby";
 import GameBoard from "./components/GameBoard";
 import "./App.css";
 import ConnectionStatus from "./components/ConnectionStatus";
-import PlayerInfo from "./components/PlayerInfoProps";
 import { useGameStore } from "./store/gameStore";
 import { socketService } from "./services/socketService";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { GameLobby } from "./components/GameLobby";
+import { PlayerInfo } from "./components/PlayerInfoProps";
 
 function App() {
   const { isConnected, setConnected, setGameState, setMyPlayerId, gameState, myPlayerId } =

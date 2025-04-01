@@ -1,14 +1,24 @@
-import Dartboard from "./Dartboard";
+import { useParams } from "react-router-dom";
+import { useGameStore } from "../store/gameStore";
+import Dartboard from "./dartboard";
 
-const GameBoard = ({ game, playerId, leaveGame, onThrow }) => {
-  const isPlayersTurn = game.currentPlayerId === playerId;
-  const currentPlayer = game.players.find((p) => p.id === game.currentPlayerId);
+export function GameBoard() {
+  const { gameId } = useParams<{ gameId: string }>();
+  const { gameState, myPlayerId } = useGameStore();
+
+  if (!gameState || gameState.gameId !== gameId) {
+    // Loading state or redirect handled by App.tsx usually
+    return <div className="text-center text-yellow-500">Loading game data...</div>;
+}
+
+const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+const isPlayersTurn = currentPlayer?.id === myPlayerId;
 
   return (
     <div className="game-board">
       <div className="game-header">
-        <h2>{game.gameType} Game</h2>
-        <button className="leave-button" onClick={leaveGame}>
+        <h2>{gameState.gameType} Game</h2>
+        <button className="leave-button" onClick={() => console.log("LEAVE")}>
           Leave Game
         </button>
       </div>
@@ -17,42 +27,17 @@ const GameBoard = ({ game, playerId, leaveGame, onThrow }) => {
         <div className="players-panel">
           <h3>Players</h3>
           <ul className="player-list">
-            {game.players.map((player) => (
-              <li
-                key={player.id}
-                className={`player ${
-                  player.id === game.currentPlayerId ? "active" : ""
-                }`}
-              >
+            {gameState.players.map((player) => (
+              <li key={player.id} className={`player ${isPlayersTurn ? "active" : ""}`}>
                 <div className="player-name">
-                  {player.name} {player.id === playerId ? "(You)" : ""}
+                  {player.nickname} {player.id === myPlayerId ? "(You)" : ""}
                 </div>
                 <div className="player-score">
-                  {game.gameType === "501" ? (
-                    <div className="score-501">{player.score.score}</div>
-                  ) : game.gameType === "cricket" ? (
-                    <div className="score-cricket">
-                      {Object.entries(player.score.marks).map(
-                        ([target, marks]) => (
-                          <div key={target} className="cricket-mark">
-                            <span className="target">{target}</span>
-                            <span className="marks">
-                              {marks > 0
-                                ? marks > 1
-                                  ? marks > 2
-                                    ? "X"
-                                    : "/"
-                                  : "-"
-                                : ""}
-                            </span>
-                          </div>
-                        )
-                      )}
-                      <div className="total-score">{player.score.score}</div>
-                    </div>
+                  {gameState.gameType === "X01" ? (
+                    <div className="score-501">{gameState.variant}</div>
                   ) : (
                     <div className="score-around-clock">
-                      Target: {player.score.currentTarget}
+                      {/* Target: {player.score.currentTarget} */}
                     </div>
                   )}
                 </div>
@@ -62,49 +47,49 @@ const GameBoard = ({ game, playerId, leaveGame, onThrow }) => {
         </div>
 
         <div className="dartboard-wrapper">
-          {game.status === "playing" ? (
+          {gameState.isGameOver === false ? (
             isPlayersTurn ? (
               <>
                 <div className="turn-indicator">Your turn!</div>
-                <Dartboard onThrow={onThrow} readOnly={false} />
+                <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} readOnly={true} />
               </>
             ) : (
               <>
                 <div className="turn-indicator">
-                  Waiting for {currentPlayer?.name || "other player"}...
+                  Waiting for {currentPlayer?.nickname || "other player"}...
                 </div>
-                <Dartboard onThrow={() => {}} readOnly={true} />
+                <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} readOnly={true} />
               </>
             )
-          ) : game.status === "finished" ? (
+          ) : gameState.isGameOver ? (
             <>
               <div className="game-result">
-                {game.winner === playerId ? (
+                {gameState.winner?.id === myPlayerId ? (
                   <h3 className="winner-message">You won! 🎉</h3>
                 ) : (
                   <h3 className="winner-message">
-                    {game.players.find((p) => p.id === game.winner)?.name ||
+                    {gameState.players.find((p) => p.id === gameState.winner?.id)?.nickname ||
                       "Opponent"}{" "}
                     won!
                   </h3>
                 )}
               </div>
-              <Dartboard readOnly={true} />
+              <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} readOnly={true} />
             </>
           ) : (
             <>
               <div className="waiting-message">
                 Waiting for players to join...
               </div>
-              <Dartboard readOnly={true} />
+              <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} readOnly={true} />
             </>
           )}
         </div>
 
-        <div className="history-panel">
+        {/* <div className="history-panel">
           <h3>Throw History</h3>
           <div className="throw-history">
-            {game.history.length === 0 ? (
+            {gameState.dartsThrownThisTurn === 0 ? (
               <p>No throws yet</p>
             ) : (
               <ul>
@@ -126,7 +111,7 @@ const GameBoard = ({ game, playerId, leaveGame, onThrow }) => {
               </ul>
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
