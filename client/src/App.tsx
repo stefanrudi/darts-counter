@@ -6,9 +6,10 @@ import ConnectionStatus from "./components/ConnectionStatus";
 import PlayerInfo from "./components/PlayerInfoProps";
 import { useGameStore } from "./store/gameStore";
 import { socketService } from "./services/socketService";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 function App() {
-  const { isConnected, setConnected, setGameState, setMyPlayerId, gameState } =
+  const { isConnected, setConnected, setGameState, setMyPlayerId, gameState, myPlayerId } =
     useGameStore();
 
   useEffect(() => {
@@ -53,32 +54,20 @@ function App() {
 
 
   return (
-    <div className="app">
+    <Router>
+      <div className="app">
       <header>
         <h1>Multiplayer Darts Game</h1>
         <ConnectionStatus isConnected={isConnected} />
       </header>
-      {playerId && (
-        <PlayerInfo playerName={playerName} updateName={updateName} />
-      )}
-
-      {view === "lobby" && (
-        <GameLobby
-          availableGames={availableGames}
-          createGame={createGame}
-          joinGame={joinGame}
-        />
-      )}
-
-      {view === "game" && currentGame && (
-        <GameBoard
-          game={currentGame}
-          playerId={playerId}
-          leaveGame={leaveGame}
-          onThrow={handleThrow}
-        />
-      )}
-    </div>
+        
+        <Routes>
+          <Route path="/" element={gameState ? <Navigate to={`/game/${gameState.gameId}}`} /> : <GameLobby/>} />
+          <Route path="/lobby" element={gameState ? <Navigate to={`/game/${gameState.gameId}`} /> : <GameLobby />} />
+          <Route path="/game/:gameId" element={gameState ? <GameBoard /> : <Navigate to="/lobby" />} />
+        </Routes>
+        </div>  
+    </Router> 
   );
 }
 
