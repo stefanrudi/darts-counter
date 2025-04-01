@@ -12,12 +12,10 @@
   "author": "",
   "license": "ISC",
   "type": "module",
-  "dependencies": {
-    "@darts-counter/shared": "file:../shared",
-    "dotenv": "^16.4.7",
+  "dependencies": {        
     "express": "^4.21.2",
-    "uuid": "^11.1.0",
-    "ws": "^8.18.1"
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0"    
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
