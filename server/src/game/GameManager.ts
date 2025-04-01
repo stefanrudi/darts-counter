@@ -45,6 +45,16 @@ export class GameManager {
                 return game;
             }
         }
-        return undefined;
+        return undefined;        
+    }
+
+    // Get all available games
+    getAvailableGames(): { gameId: string; gameType: GameType; variant?: X01Variant, playerCount: number }[] {
+        return Array.from(this.games.values()).map((game) => ({
+            gameId: game.gameId,
+            gameType: game.gameType,
+            variant: game.variant,
+            playerCount: game.players.length,            
+        }));
     }
 }

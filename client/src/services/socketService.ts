@@ -65,6 +65,10 @@ class SocketService {
         this.emit('throw_dart', payload);
     }
 
+    getAvailableGames() {
+        this.emit('get_available_games');
+    }
+
     // --- Listener Functions ---
     onGameUpdate(listener: (gameState: GameState) => void) {
         this.socket?.on('game_update', listener);
@@ -88,6 +92,14 @@ class SocketService {
 
     offPlayerLeft() {
         this.socket?.off('player_left');
+    }
+
+    onAvailableGames(listener: (games: any[]) => void) {
+        this.socket?.on('available_games', listener);
+    }
+
+    offAvailableGames() {
+        this.socket?.off('available_games');
     }
 }
 

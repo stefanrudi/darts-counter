@@ -69,6 +69,11 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
         }
     });
 
+    socket.on('get_available_games', () => {
+        const availableGames  = gameManager.getAvailableGames();
+        socket.emit('available_games', availableGames);
+    });
+
     socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);
         // Find which game the player was in
