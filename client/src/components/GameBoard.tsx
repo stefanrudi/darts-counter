@@ -34,10 +34,10 @@ const isPlayersTurn = currentPlayer?.id === myPlayerId;
                 </div>
                 <div className="player-score">
                   {gameState.gameType === "X01" ? (
-                    <div className="score-501">{gameState.variant}</div>
+                    <div className="score-501">{player.score}</div>
                   ) : (
                     <div className="score-around-clock">
-                      {/* Target: {player.score.currentTarget} */}
+                      Target: {player.currentNumber}
                     </div>
                   )}
                 </div>
@@ -51,14 +51,14 @@ const isPlayersTurn = currentPlayer?.id === myPlayerId;
             isPlayersTurn ? (
               <>
                 <div className="turn-indicator">Your turn!</div>
-                <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} readOnly={true} />
+                <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} />
               </>
             ) : (
               <>
                 <div className="turn-indicator">
                   Waiting for {currentPlayer?.nickname || "other player"}...
                 </div>
-                <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} readOnly={true} />
+                <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} />
               </>
             )
           ) : gameState.isGameOver ? (
@@ -74,14 +74,14 @@ const isPlayersTurn = currentPlayer?.id === myPlayerId;
                   </h3>
                 )}
               </div>
-              <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} readOnly={true} />
+              <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} />
             </>
           ) : (
             <>
               <div className="waiting-message">
                 Waiting for players to join...
               </div>
-              <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} readOnly={true} />
+              <Dartboard gameId={gameId} isMyTurn={isPlayersTurn} />
             </>
           )}
         </div>

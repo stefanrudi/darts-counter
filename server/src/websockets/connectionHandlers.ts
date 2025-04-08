@@ -54,7 +54,7 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
             return;
         }
 
-        const result = game.handleThrow(socket.id, payload.segment);
+        const result = game.handleThrow(socket.id, segment);
         if ('error' in result) {
             socket.emit('error_occurred', { message: result.error });
         } else {

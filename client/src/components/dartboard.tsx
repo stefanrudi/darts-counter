@@ -3,11 +3,10 @@ import { socketService } from "../services/socketService";
 
 interface DartboardProps {
   gameId: string;
-  isMyTurn: boolean;
-  readOnly: boolean;
+  isMyTurn: boolean;  
 }
 
-export function Dartboard({ gameId, isMyTurn, readOnly }: DartboardProps) {
+export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
   const [lastPosition, setLastPosition] = useState(null);
 
   // Dartboard properties - using hardcoded values for simplicity
@@ -39,8 +38,8 @@ export function Dartboard({ gameId, isMyTurn, readOnly }: DartboardProps) {
   }
 
   const handleClick = (e: any) => {
-    if (!isMyTurn || readOnly) {
-      console.log(`Cannot throw: isMyTurn=${isMyTurn}, disabled=${readOnly}`);
+    if (!isMyTurn) {
+      console.log(`Cannot throw: isMyTurn=${isMyTurn}`);
       return;
     }
 
@@ -125,7 +124,7 @@ export function Dartboard({ gameId, isMyTurn, readOnly }: DartboardProps) {
       } else if (distance >= doubleRingInner && distance <= doubleRingOuter) {
         return `D${baseScore}`; // Double
       } else {
-        return "baseScore"; // Single
+        return `S${baseScore}`; // Single
       }
     } else if (distance <= missableArea) {
       return "MISS"; // Missed the board but within missable area
@@ -166,7 +165,7 @@ export function Dartboard({ gameId, isMyTurn, readOnly }: DartboardProps) {
         height="500"
         viewBox="-250 -250 500 500"
         onClick={handleClick}
-        className={`dartboard ${readOnly ? "read-only" : "clickable"}`}
+        className={`dartboard ${isMyTurn ? "read-only" : "clickable"}`}
       >
         {/* Missable area background */}
         <circle
