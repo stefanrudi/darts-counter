@@ -65,7 +65,7 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
     if (distance <= missableArea) {
       const position: Position = { x, y };
       setLastPosition(position);
-      const segment = calculateSegment();
+      const segment = calculateSegment(position);
       console.log(`Sending throw: ${segment} for game ${gameId}`);
       socketService.throwDart({ gameId, segment });
     }
@@ -107,8 +107,8 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
     return null; // Outside clickable area
   };
 
-  const calculateSegment = () => {
-    const { x, y } = lastPosition;
+  const calculateSegment = (position: Position) => {
+    const { x, y } = position;
     const distance = Math.sqrt(x * x + y * y);
 
     // Calculate angle in radians, adjust to make 20 at top
