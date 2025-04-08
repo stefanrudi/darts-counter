@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useGameStore } from "../store/gameStore";
-import Dartboard from "./dartboard";
+import Dartboard from "./Dartboard";
 import { socketService } from "../services/socketService";
 
 export function GameBoard() {
