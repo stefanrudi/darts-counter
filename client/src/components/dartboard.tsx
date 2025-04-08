@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { socketService } from "../services/socketService";
+import { Position } from "../utils/types";
 
 interface DartboardProps {
   gameId: string;
-  isMyTurn: boolean;  
+  isMyTurn: boolean;
 }
 
 export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
-  const [lastPosition, setLastPosition] = useState(null);
+  const [lastPosition, setLastPosition] = useState<Position | null>(null);
 
-  // Dartboard properties - using hardcoded values for simplicity
+  // Dartboard properties
   const bullseyeRadius = 12.5;
   const singleBullRadius = 31.25;
   const tripleRingInner = 107;
@@ -19,25 +20,34 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
   const boardEdge = 175;
   const missableArea = 240;
 
-  // Color schemes for the dartboard
-  const boardColors = ["#181818", "#F0F0F0"]; // Black and off-white for contrast
-  const ringColors = ["#0AAA22", "#B91622"]; // Green and red for the rings
+  // Dartboard colors
+  const boardColors = ["#181818", "#F0F0F0"];
+  const ringColors = ["#0AAA22", "#B91622"];
 
   // Define the 20 sections of the dartboard - starting with 20 at the top (clockwise order)
   const scores = [
     20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5
   ];
-  const sections = [];
+  //const sections = [];
 
-  // Create sections with correct orientation (20 at top)
-  for (let i = 0; i < 20; i++) {
-    // Offset by -9 degrees (half a segment) so 20 is centered at top
-    const startAngle = (i * 18 - 9) * (Math.PI / 180);
-    const endAngle = ((i + 1) * 18 - 9) * (Math.PI / 180);
-    sections.push({ startAngle, endAngle, score: scores[i] });
-  }
+  // Precompute sections for the dartboard
+  const sections = React.useMemo(() => {
+    return scores.map((score, index) => {
+      const startAngle = (index * 18 - 9) * (Math.PI / 180);
+      const endAngle = ((index + 1) * 18 - 9) * (Math.PI / 180);
+      return { startAngle, endAngle, score };
+    });
+  }, [scores]);
 
-  const handleClick = (e: any) => {
+  // // Create sections with correct orientation (20 at top)
+  // for (let i = 0; i < 20; i++) {
+  //   // Offset by -9 degrees (half a segment) so 20 is centered at top
+  //   const startAngle = (i * 18 - 9) * (Math.PI / 180);
+  //   const endAngle = ((i + 1) * 18 - 9) * (Math.PI / 180);
+  //   sections.push({ startAngle, endAngle, score: scores[i] });
+  // }
+
+  const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!isMyTurn) {
       console.log(`Cannot throw: isMyTurn=${isMyTurn}`);
       return;
@@ -53,17 +63,16 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
     // Check if the click was inside the missable area
     const distance = Math.sqrt(x * x + y * y);
     if (distance <= missableArea) {
-      setLastPosition({ x, y });
+      const position: Position = { x, y };
+      setLastPosition(position);
       const segment = calculateSegment();
-      console.log(`Sending throw: ${segment} for game ${gameId}`);      
+      console.log(`Sending throw: ${segment} for game ${gameId}`);
       socketService.throwDart({ gameId, segment });
     }
   };
 
   // Calculate the score of the last throw (for display purposes)
-  const calculateScore = (position: never) => {
-    if (!position) return null;
-
+  const calculateScore = (position: Position) => {
     const { x, y } = position;
     const distance = Math.sqrt(x * x + y * y);
 
@@ -133,7 +142,7 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
     return null; // Outside clickable area
   };
 
-  const getScoreLabel = (position: never) => {
+  const getScoreLabel = (position: Position | null): string => {
     if (!position) return "";
 
     const score = calculateScore(position);
@@ -165,7 +174,7 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
         height="500"
         viewBox="-250 -250 500 500"
         onClick={handleClick}
-        className={`dartboard ${isMyTurn ? "read-only" : "clickable"}`}
+        className={`dartboard ${isMyTurn ? "clickable" : "read-only"}`}
       >
         {/* Missable area background */}
         <circle
@@ -326,42 +335,11 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
       </svg>
 
       {lastPosition && (
-        <div className="last-throw-score">
+        <div className="dartboard.last-throw-score">
           <strong>{getScoreLabel(lastPosition)}</strong>
         </div>
       )}
 
-      <style jsx>{`
-        .dartboard-container {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          margin: 20px auto;
-        }
-
-        .dartboard {
-          background-color: transparent;
-        }
-
-        .clickable {
-          cursor: crosshair;
-        }
-
-        .read-only {
-          cursor: default;
-        }
-
-        .last-throw-score {
-          margin-top: 10px;
-          padding: 6px 12px;
-          background-color: #333;
-          color: white;
-          border-radius: 4px;
-          text-align: center;
-          font-size: 16px;
-        }
-      `}</style>
     </div>
   );
 }

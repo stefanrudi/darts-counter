@@ -267,9 +267,12 @@ button:hover {
 
 /* Dartboard */
 .dartboard-container {
+  position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin: 20px auto;
 }
 
 .dartboard.clickable {
@@ -279,6 +282,16 @@ button:hover {
 .dartboard.read-only {
   opacity: 0.9;
   cursor: default;
+}
+
+.dartboard.last-throw-score {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #333;
+  color: white;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 16px;
 }
 
 /* Score displays */
