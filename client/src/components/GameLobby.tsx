@@ -15,13 +15,21 @@ interface GameLobbyProps {
 export function GameLobby() {
   const { myPlayerId } = useGameStore();
 
-  const [nickname, setNickname] = useState(`Player ${myPlayerId?.slice(-4)}`);
+  const [nickname, setNickname] = useState('');
   const [gameIdToJoin, setGameIdToJoin] = useState('');  
   const [gameType, setGameType] = useState<GameType>("X01");
   const [x01Variant, setX01Variant] = useState<X01Variant>(501);
   const [availableGames, setAvailableGames] = useState<{ gameId: string; gameType: string; variant?: number; playerCount: number }[]>([]);
 
+  // Set the nickname when myPlayerId changes
   useEffect(() => {
+    if (myPlayerId) {
+      setNickname(`Player ${myPlayerId.slice(-4)}`);
+    }
+  }, [myPlayerId]);
+
+  // Manage WebSocket events for available games
+  useEffect(() => {    
     socketService.getAvailableGames();
     socketService.onAvailableGames((games) => {
       setAvailableGames(games);
