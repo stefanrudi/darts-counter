@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { GameType, X01Variant } from "../../../server/src/game/types";
 import { socketService } from "../services/socketService";
+import { useGameStore } from "../store/gameStore";
 
 interface GameLobbyProps {
   availableGames: {
@@ -12,7 +13,9 @@ interface GameLobbyProps {
 }
 
 export function GameLobby() {
-  const [nickname, setNickname] = useState("");
+  const { myPlayerId } = useGameStore();
+
+  const [nickname, setNickname] = useState(`Player ${myPlayerId?.slice(-4)}`);
   const [gameIdToJoin, setGameIdToJoin] = useState('');  
   const [gameType, setGameType] = useState<GameType>("X01");
   const [x01Variant, setX01Variant] = useState<X01Variant>(501);
