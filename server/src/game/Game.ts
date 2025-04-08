@@ -57,13 +57,12 @@ export class Game implements GameState {
     if (this.players.length < 2) {
       this.isGameOver = true; // End game if less than 2 players
     } else {
-      // Reorder players
-      // TODO: Maybe does not work correctly
+      // Reorder players      
       this.players.forEach((player, idx) => {
         player.order = idx;
       });
     }
-    return false;
+    return true;
   }
 
   handleThrow(playerId: string, segment: Segment): GameState | { error: string } {
