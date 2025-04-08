@@ -22,6 +22,7 @@ export function GameLobby() {
   const [availableGames, setAvailableGames] = useState<{ gameId: string; gameType: string; variant?: number; playerCount: number }[]>([]);
 
   useEffect(() => {
+    socketService.getAvailableGames();
     socketService.onAvailableGames((games) => {
       setAvailableGames(games);
     });
