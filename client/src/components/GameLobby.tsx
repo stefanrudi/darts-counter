@@ -36,12 +36,14 @@ export function GameLobby() {
 
   // Manage WebSocket events for available games
   useEffect(() => {
+    // Fetch the initial list of available games
     socketService.getAvailableGames();
+
     socketService.onAvailableGames((games) => {
       setAvailableGames(games);
     });
 
-    // Cleanup on unmount
+    // Cleanup the listener on unmount
     return () => {
       socketService.offAvailableGames();
     };

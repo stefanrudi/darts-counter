@@ -21,6 +21,9 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
 
         // Send game state back to the creator
         socket.emit('game_update', game.getCurrentState());
+
+        // Notify all clients about the updated list of available games
+        io.emit('available_games', gameManager.getAvailableGames());
     });
 
     socket.on('join_game', (payload: JoinGamePayload) => {
@@ -54,7 +57,7 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
             socket.emit('error_occurred', { message: `Game ${gameId} not found!` });
             return;
         }
-        
+
         const playerId = socket.id;
         const removed = game.removePlayer(playerId);
         if (removed) {
