@@ -15,11 +15,17 @@ interface GameLobbyProps {
 export function GameLobby() {
   const { myPlayerId } = useGameStore();
 
-  const [nickname, setNickname] = useState('');
-  const [gameIdToJoin, setGameIdToJoin] = useState('');  
+  const [nickname, setNickname] = useState("");
   const [gameType, setGameType] = useState<GameType>("X01");
   const [x01Variant, setX01Variant] = useState<X01Variant>(501);
-  const [availableGames, setAvailableGames] = useState<{ gameId: string; gameType: string; variant?: number; playerCount: number }[]>([]);
+  const [availableGames, setAvailableGames] = useState<
+    {
+      gameId: string;
+      gameType: string;
+      variant?: number;
+      playerCount: number;
+    }[]
+  >([]);
 
   // Set the nickname when myPlayerId changes
   useEffect(() => {
@@ -29,7 +35,7 @@ export function GameLobby() {
   }, [myPlayerId]);
 
   // Manage WebSocket events for available games
-  useEffect(() => {    
+  useEffect(() => {
     socketService.getAvailableGames();
     socketService.onAvailableGames((games) => {
       setAvailableGames(games);
@@ -54,18 +60,18 @@ export function GameLobby() {
     socketService.createGame(payload);
   };
 
-  const handleJoinGame = () => {
+  const handleJoinGame = (gameId: string) => {
     if (!nickname.trim()) {
       alert("Please enter a nickname.");
       return;
     }
-    if (!gameIdToJoin.trim()) {
-      alert("Please enter a Game ID to join.");
+    if (!gameId.trim()) {
+      alert("Game ID is not defined!");
       return;
     }
     const payload = {
       nickname: nickname.trim(),
-      gameId: gameIdToJoin.trim()
+      gameId: gameId.trim()
     };
     socketService.joinGame(payload);
   };
@@ -73,17 +79,17 @@ export function GameLobby() {
   return (
     <div className="game-lobby">
       <div className="player-info">
-      <label>
-        Your Name:
-        <input
-          type="text"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          maxLength={20}
-        />
-      </label>
-    </div>
-    
+        <label>
+          Your Name:
+          <input
+            type="text"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            maxLength={20}
+          />
+        </label>
+      </div>
+
       <h2>Game Lobby</h2>
 
       <div className="create-game">
@@ -110,9 +116,7 @@ export function GameLobby() {
             Around the Clock
           </label>
         </div>
-        <button onClick={() => handleCreateGame()}>
-          Create Game
-        </button>
+        <button onClick={() => handleCreateGame()}>Create Game</button>
       </div>
 
       <div className="available-games">
@@ -132,10 +136,9 @@ export function GameLobby() {
                     {game.variant ? `Variant: ${game.variant}` : ""}
                   </span>
                 </div>
-                <button onClick={() => {
-                  setGameIdToJoin(game.gameId);
-                  handleJoinGame();
-                }}>Join Game</button>
+                <button onClick={() => handleJoinGame(game.gameId)}>
+                  Join Game
+                </button>
               </li>
             ))}
           </ul>
@@ -143,4 +146,4 @@ export function GameLobby() {
       </div>
     </div>
   );
-};
+}

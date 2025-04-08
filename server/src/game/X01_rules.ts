@@ -1,6 +1,5 @@
 import { Segment } from './types';
 
-// Thank you Claude ;)
 const segmentValues: { [key: Segment]: { score: number, isDouble: boolean, isTriple: boolean, isBull: boolean } } = {
     // Singles 1-20
     'S1': { score: 1, isDouble: false, isTriple: false, isBull: false }, 'S2': { score: 2, isDouble: false, isTriple: false, isBull: false },
