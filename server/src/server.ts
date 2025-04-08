@@ -2,7 +2,6 @@ import express, { Express } from "express";
 import http, { Server as HTTPServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { handleConnection } from "./websockets/connectionHandlers";
-import { Game } from "./game/Game";
 import { GameManager } from "./game/GameManager";
 
 // Initialize Express app
