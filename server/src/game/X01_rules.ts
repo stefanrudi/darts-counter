@@ -33,7 +33,7 @@ const segmentValues: { [key: Segment]: { score: number, isDouble: boolean, isTri
     'T11': { score: 33, isDouble: false, isTriple: true, isBull: false }, 'T12': { score: 36, isDouble: false, isTriple: true, isBull: false },
     'T13': { score: 39, isDouble: false, isTriple: true, isBull: false }, 'T14': { score: 42, isDouble: false, isTriple: true, isBull: false },
     'T15': { score: 45, isDouble: false, isTriple: true, isBull: false }, 'T16': { score: 48, isDouble: false, isTriple: true, isBull: false },
-    'T17': { score: 51, isDouble: false, isTriple: true, isBull: false }, 'T18': { score: 57, isDouble: false, isTriple: true, isBull: false },
+    'T17': { score: 51, isDouble: false, isTriple: true, isBull: false }, 'T18': { score: 54, isDouble: false, isTriple: true, isBull: false },
     'T19': { score: 57, isDouble: false, isTriple: true, isBull: false }, 'T20': { score: 60, isDouble: false, isTriple: true, isBull: false },
     // Others
     '25': { score: 25, isDouble: false, isTriple: false, isBull: false },
