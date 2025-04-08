@@ -1,24 +1,41 @@
 import { useParams } from "react-router-dom";
 import { useGameStore } from "../store/gameStore";
 import Dartboard from "./dartboard";
+import { socketService } from "../services/socketService";
 
 export function GameBoard() {
   const { gameId } = useParams<{ gameId: string }>();
-  const { gameState, myPlayerId } = useGameStore();
+  const { gameState, myPlayerId, setGameState } = useGameStore();
 
   if (!gameState || gameState.gameId !== gameId) {
     // Loading state or redirect handled by App.tsx usually
-    return <div className="text-center text-yellow-500">Loading game data...</div>;
-}
+    return (
+      <div className="text-center text-yellow-500">Loading game data...</div>
+    );
+  }
 
-const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-const isPlayersTurn = currentPlayer?.id === myPlayerId;
+  const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+  const currentPlayerId = currentPlayer?.id;
+  const isPlayersTurn = currentPlayer?.id === myPlayerId;
+
+  const handleLeaveGame = () => {
+    if (!gameId) {
+      alert("Unable to leave the game. Missing game or player information.");
+      return;
+    }
+    // Handle leaving the game
+    socketService.leaveGame({ gameId });
+    setGameState(null);
+  };
 
   return (
     <div className="game-board">
       <div className="game-header">
         <h2>{gameState.gameType} Game</h2>
-        <button className="leave-button" onClick={() => console.log("LEAVE")}>
+        <button
+          className="leave-button"
+          onClick={handleLeaveGame}
+        >
           Leave Game
         </button>
       </div>
@@ -28,7 +45,10 @@ const isPlayersTurn = currentPlayer?.id === myPlayerId;
           <h3>Players</h3>
           <ul className="player-list">
             {gameState.players.map((player) => (
-              <li key={player.id} className={`player ${isPlayersTurn ? "active" : ""}`}>
+              <li
+                key={player.id}
+                className={`player ${isPlayersTurn ? "active" : ""}`}
+              >
                 <div className="player-name">
                   {player.nickname} {player.id === myPlayerId ? "(You)" : ""}
                 </div>
@@ -68,8 +88,9 @@ const isPlayersTurn = currentPlayer?.id === myPlayerId;
                   <h3 className="winner-message">You won! 🎉</h3>
                 ) : (
                   <h3 className="winner-message">
-                    {gameState.players.find((p) => p.id === gameState.winner?.id)?.nickname ||
-                      "Opponent"}{" "}
+                    {gameState.players.find(
+                      (p) => p.id === gameState.winner?.id
+                    )?.nickname || "Opponent"}{" "}
                     won!
                   </h3>
                 )}
@@ -115,6 +136,6 @@ const isPlayersTurn = currentPlayer?.id === myPlayerId;
       </div>
     </div>
   );
-};
+}
 
 export default GameBoard;

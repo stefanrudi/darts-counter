@@ -11,6 +11,10 @@ export interface JoinGamePayload {
     gameId: string;
 }
 
+export interface LeaveGamePayload {    
+    gameId: string;
+}
+
 export interface ThrowDartPayload {
     gameId: string;
     segment: Segment;

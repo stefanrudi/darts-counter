@@ -62,7 +62,7 @@ function App() {
       </header>
         
         <Routes>
-          <Route path="/" element={gameState ? <Navigate to={`/game/${gameState.gameId}}`} /> : <GameLobby/>} />
+          <Route path="/" element={gameState ? <Navigate to={`/game/${gameState.gameId}`} /> : <GameLobby/>} />
           <Route path="/lobby" element={gameState ? <Navigate to={`/game/${gameState.gameId}`} /> : <GameLobby />} />
           <Route path="/game/:gameId" element={gameState ? <GameBoard /> : <Navigate to="/lobby" />} />
         </Routes>

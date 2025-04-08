@@ -1,6 +1,6 @@
 import { Socket, Server as SocketIOServer } from 'socket.io';
 import { GameManager } from "../game/GameManager";
-import { CreateGamePayload, JoinGamePayload, ThrowDartPayload } from './types';
+import { CreateGamePayload, JoinGamePayload, LeaveGamePayload, ThrowDartPayload } from './types';
 
 export function handleConnection(socket: Socket, io: SocketIOServer, gameManager: GameManager) {
 
@@ -46,6 +46,28 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
         io.to(game.gameId).emit('game_update', game.getCurrentState());
     });
 
+    socket.on('leave_game', (payload: LeaveGamePayload) => {
+        const { gameId } = payload;
+        const game = gameManager.getGame(gameId);
+
+        if (!game) {
+            socket.emit('error_occurred', { message: `Game ${gameId} not found!` });
+            return;
+        }
+        
+        const playerId = socket.id;
+        const removed = game.removePlayer(playerId);
+        if (removed) {
+            io.to(gameId).emit("player_left", { playerId });
+            // Notify all players in the game about the new player
+            io.to(game.gameId).emit('game_update', game.getCurrentState());
+
+            if (game.players.length === 0 || game.isGameOver) {
+                gameManager.deleteGame(gameId);
+            }
+        }
+    });
+
     socket.on('throw_dart', (payload: ThrowDartPayload) => {
         const { gameId, segment } = payload;
         const game = gameManager.getGame(gameId);
@@ -70,7 +92,7 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
     });
 
     socket.on('get_available_games', () => {
-        const availableGames  = gameManager.getAvailableGames();
+        const availableGames = gameManager.getAvailableGames();
         socket.emit('available_games', availableGames);
     });
 
