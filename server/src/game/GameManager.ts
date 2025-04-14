@@ -20,8 +20,8 @@ export class GameManager {
 
     createGame(type: GameType, variant?: X01Variant): Game {
         const newGame = new Game(type, variant);
-        this.games.set(newGame.gameId, newGame);
-        console.log(`Game created: ${newGame.gameId} of type ${type}${variant ? ` (${variant})` : ''}`);
+        this.games.set(newGame.id, newGame);
+        console.log(`Game created: ${newGame.id} of type ${type}${variant ? ` (${variant})` : ''}`);
         return newGame;
     }
 
@@ -51,7 +51,7 @@ export class GameManager {
     // Get all available games
     getAvailableGames(): { gameId: string; gameType: GameType; variant?: X01Variant, playerCount: number }[] {
         return Array.from(this.games.values()).map((game) => ({
-            gameId: game.gameId,
+            gameId: game.id,
             gameType: game.gameType,
             variant: game.variant,
             playerCount: game.players.length,            

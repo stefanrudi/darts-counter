@@ -1,20 +1,20 @@
 import { calculateX01Score, checkX01Bust, checkX01Win } from "./X01_rules";
-import { GameState, GameType, PlayerState, Segment, ThrowAttempt, X01Variant } from "./types";
+import { Game, GameType, Player, Segment, Throws, X01Variant } from "./types";
 import { v4 as uuidv4 } from "uuid";
 
-export class Game implements GameState {
-  gameId: string;
+export class Game implements Game {
+  id: string;
   gameType: GameType;
   variant?: X01Variant;
-  players: PlayerState[] = [];
+  players: Player[] = [];
   currentPlayerIndex: number = 0;
   dartsThrownThisTurn: number = 0;
   isGameOver: boolean = false;
-  winner?: PlayerState;
-  lastThrow?: ThrowAttempt;
+  winner?: Player;
+  lastThrow?: Throws;
 
   constructor(type: GameType, variant?: X01Variant) {
-    this.gameId = uuidv4();
+    this.id = uuidv4();
     this.gameType = type;
     if (type === "X01" && variant) {
       this.variant = variant;
@@ -22,7 +22,7 @@ export class Game implements GameState {
   }
 
 
-  addPlayer(socketId: string, nickname: string): PlayerState | null {
+  addPlayer(socketId: string, nickname: string): Player | null {
     // Check if the player is already in the game
     if (this.players.find(player => player.id === socketId)) {
       return null;
@@ -31,9 +31,9 @@ export class Game implements GameState {
     // TODO: Define player limit and check against it
 
     // Create a new player
-    const newPlayer: PlayerState = {
+    const newPlayer: Player = {
       id: socketId,
-      nickname: nickname,
+      name: nickname,
       score: this.gameType === "X01" ? this.variant! : 0, // Initial score
       currentNumber: this.gameType === "AroundTheClock" ? 1 : undefined,
       hits: this.gameType === "AroundTheClock" ? new Set<number>() : undefined,
@@ -65,7 +65,7 @@ export class Game implements GameState {
     return true;
   }
 
-  handleThrow(playerId: string, segment: Segment): GameState | { error: string } {
+  handleThrow(playerId: string, segment: Segment): Game | { error: string } {
     const player = this.players[this.currentPlayerIndex];
     if (player.id !== playerId) {
       return { error: "Not your turn" };
@@ -109,7 +109,7 @@ export class Game implements GameState {
     }
 
     this.dartsThrownThisTurn++;
-    this.lastThrow = { player, segment, scoreValue, isBust, isWin };
+    this.lastThrow = { player, segment, score: scoreValue, isBust, isWin };
 
     // Check if turn should end (3 darts or game ending throw)
     if (!turnOver && this.dartsThrownThisTurn >= 3) {
@@ -125,9 +125,9 @@ export class Game implements GameState {
   }
 
   // Return a copy of the current game state
-  getCurrentState(): GameState {
+  getCurrentState(): Game {
     return {
-      gameId: this.gameId,
+      id: this.id,
       gameType: this.gameType,
       variant: this.variant,
       players: [...this.players],
