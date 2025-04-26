@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Game, GameType, X01Variant } from "../../../server/src/game/types";
+import { Game } from "../../../server/src/game/types";
 import { socketService } from "../services/socketService";
 import { useGameStore } from "../store/gameStore";
 import { Button } from "@/components/ui/button";
@@ -16,14 +16,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GameList } from "./GameList";
 import { GameCreation } from "./GameCreation";
+import { CreateGamePayload } from "../../../server/src/websockets/types";
+import { GameCreationSettings } from "./GameCreation";
 
 export function GameLobby() {
   const { myPlayerId } = useGameStore();
 
   const [playerName, setPlayerName] = useState<string>("");
-  const [isNameSet, setIsNameSet] = useState<boolean>(false);
-  const [gameType, setGameType] = useState<GameType>("X01");
-  const [x01Variant, setX01Variant] = useState<X01Variant>(501);
+  const [isNameSet, setIsNameSet] = useState<boolean>(false);  
   const [games, setGames] = useState<Game[]>();
 
   // Set the nickname when myPlayerId changes
@@ -57,11 +57,13 @@ export function GameLobby() {
     };
   }, []);
 
-  const handleCreateGame = () => {
-    const payload = {
+  const handleCreateGame = (gameSettings: GameCreationSettings) => {
+    const payload: CreateGamePayload = {
+      gameName: gameSettings.name,
       nickname: playerName,
-      gameType: gameType,
-      variant: gameType === "X01" ? x01Variant : undefined
+      variant: gameSettings.startingScore,
+      checkoutType: gameSettings.checkoutType,
+      maxPlayers: gameSettings.maxPlayers
     };
     socketService.createGame(payload);
   };

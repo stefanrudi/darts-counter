@@ -8,7 +8,7 @@ export function GameBoard() {
   const { gameState, myPlayerId, setGameState } = useGameStore();
   const navigate = useNavigate();
 
-  if (!gameState || gameState.gameId !== gameId) {
+  if (!gameState || gameState.id !== gameId) {
     // Loading state or redirect handled by App.tsx usually
     return (
       <div className="text-center text-yellow-500">Loading game data...</div>
@@ -42,7 +42,7 @@ export function GameBoard() {
             }`}
           >
             <div className="player-name">
-              {player.nickname} {player.id === myPlayerId ? "(You)" : ""}
+              {player.name} {player.id === myPlayerId ? "(You)" : ""}
             </div>
             <div className="player-score">
               {gameState.gameType === "X01" ? (
@@ -89,7 +89,7 @@ export function GameBoard() {
   return (
     <div className="game-board">
       <div className="game-header">
-        <h2>{gameState.gameType} Game</h2>
+        <h2>{gameState.startingScore} Game</h2>
         <button className="leave-button" onClick={handleLeaveGame}>
           Leave Game
         </button>

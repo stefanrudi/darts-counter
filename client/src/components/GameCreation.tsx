@@ -12,29 +12,27 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import type { Game } from "../../../server/src/game/types";
 
+export interface GameCreationSettings {
+  name: string;
+  startingScore: number;
+  checkoutType: "double" | "single";
+  maxPlayers: number;
+}
 interface GameCreationProps {
-  onCreateGame: (game: Game) => void;
+  onCreateGame: (gameSettings: GameCreationSettings) => void;
 }
 
 export function GameCreation({ onCreateGame }: GameCreationProps) {
-  const [gameSettings, setGameSettings] = useState<
-    Omit<Game, "id" | "players">
-  >({
+  const [gameSettings, setGameSettings] = useState<GameCreationSettings>({
     name: "New Game",
     startingScore: 501,
     checkoutType: "double",
-    maxPlayers: 4,
-    players: []
+    maxPlayers: 4
   });
 
   const handleCreateGame = () => {
-    onCreateGame({
-      ...gameSettings,
-      id: "",
-      players: []
-    });
+    onCreateGame(gameSettings); // Pass the game settings to the parent component
   };
 
   return (
@@ -58,7 +56,7 @@ export function GameCreation({ onCreateGame }: GameCreationProps) {
           <Label>Starting Score</Label>
           <RadioGroup
             defaultValue={gameSettings.startingScore.toString()}
-            onValueChange={(value) =>
+            onValueChange={(value: string) =>
               setGameSettings({
                 ...gameSettings,
                 startingScore: Number.parseInt(value)
@@ -85,7 +83,7 @@ export function GameCreation({ onCreateGame }: GameCreationProps) {
           <Label>Checkout Type</Label>
           <RadioGroup
             defaultValue={gameSettings.checkoutType}
-            onValueChange={(value) =>
+            onValueChange={(value: string) =>
               setGameSettings({
                 ...gameSettings,
                 checkoutType: value as "double" | "single"

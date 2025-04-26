@@ -3,7 +3,7 @@ import { CheckoutType, Segment, X01Variant } from "../game/types";
 export interface CreateGamePayload {
     gameName: string;
     nickname: string;
-    variant: X01Variant;
+    variant: number;
     checkoutType: CheckoutType;
     maxPlayers: number;
 }

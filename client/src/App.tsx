@@ -1,14 +1,18 @@
 import { useEffect } from "react";
 import GameBoard from "./components/GameBoard";
 import "./App.css";
-import ConnectionStatus from "./components/ConnectionStatus";
 import { useGameStore } from "./store/gameStore";
 import { socketService } from "./services/socketService";
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate
+} from "react-router-dom";
 import { GameLobby } from "./components/GameLobby";
 
 function App() {
-  const { isConnected, setConnected, setGameState, setMyPlayerId, gameState, myPlayerId } =
+  const { setConnected, setGameState, setMyPlayerId, gameState } =
     useGameStore();
 
   useEffect(() => {
@@ -51,19 +55,39 @@ function App() {
     };
   }, [setConnected, setGameState, setMyPlayerId]);
 
-
   return (
     <Router>
       <main className="container mx-auto p-4">
         <h1 className="text-3xl font-bold text-center mb-8">Darts Counter</h1>
-        
+
         <Routes>
-          <Route path="/" element={gameState ? <Navigate to={`/game/${gameState.id}`} /> : <GameLobby/>} />
-          <Route path="/lobby" element={gameState ? <Navigate to={`/game/${gameState.id}`} /> : <GameLobby />} />
-          <Route path="/game/:gameId" element={gameState ? <GameBoard /> : <Navigate to="/lobby" />} />
+          <Route
+            path="/"
+            element={
+              gameState ? (
+                <Navigate to={`/game/${gameState.id}`} />
+              ) : (
+                <GameLobby />
+              )
+            }
+          />
+          <Route
+            path="/lobby"
+            element={
+              gameState ? (
+                <Navigate to={`/game/${gameState.id}`} />
+              ) : (
+                <GameLobby />
+              )
+            }
+          />
+          <Route
+            path="/game/:gameId"
+            element={gameState ? <GameBoard /> : <Navigate to="/lobby" />}
+          />
         </Routes>
-      </main>  
-    </Router> 
+      </main>
+    </Router>
   );
 }
 
