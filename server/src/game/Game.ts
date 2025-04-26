@@ -1,48 +1,51 @@
 import { calculateX01Score, checkX01Bust, checkX01Win } from "./X01_rules";
-import { Game, GameType, Player, Segment, Throws, X01Variant } from "./types";
+import { CheckoutType, Game, GameState, Player, Segment, Throws, X01Variant } from "./types";
 import { v4 as uuidv4 } from "uuid";
 
 export class Game implements Game {
   id: string;
-  gameType: GameType;
-  variant?: X01Variant;
+  name: string;
+  startingScore: number;
+  checkoutType: CheckoutType;
+  maxPlayers: number;
+  gameState: GameState;
+
   players: Player[] = [];
   currentPlayerIndex: number = 0;
   dartsThrownThisTurn: number = 0;
-  isGameOver: boolean = false;
   winner?: Player;
-  lastThrow?: Throws;
 
-  constructor(type: GameType, variant?: X01Variant) {
+  constructor(name: string, startingScore: number, checkoutType: CheckoutType, maxPlayers: number) {
     this.id = uuidv4();
-    this.gameType = type;
-    if (type === "X01" && variant) {
-      this.variant = variant;
-    }
+    this.name = name;
+    this.startingScore = startingScore;
+    this.checkoutType = checkoutType;
+    this.maxPlayers = maxPlayers;
+    this.gameState = "waiting";
   }
 
 
+
   addPlayer(socketId: string, nickname: string): Player | null {
+    // Check if the game is full
+    if (this.players.length >= this.maxPlayers) {
+      return null; // Game is full
+    }
+
     // Check if the player is already in the game
     if (this.players.find(player => player.id === socketId)) {
       return null;
     }
 
-    // TODO: Define player limit and check against it
-
     // Create a new player
     const newPlayer: Player = {
       id: socketId,
       name: nickname,
-      score: this.gameType === "X01" ? this.variant! : 0, // Initial score
-      currentNumber: this.gameType === "AroundTheClock" ? 1 : undefined,
-      hits: this.gameType === "AroundTheClock" ? new Set<number>() : undefined,
-      order: this.players.length,
+      score: this.startingScore,
+      throws: [],
     };
     this.players.push(newPlayer);
 
-    // Sort by order
-    this.players.sort((a, b) => a.order - b.order);
     return newPlayer;
   }
 
@@ -55,12 +58,7 @@ export class Game implements Game {
     this.players.splice(index, 1); // Remove player from the game
 
     if (this.players.length < 2) {
-      this.isGameOver = true; // End game if less than 2 players
-    } else {
-      // Reorder players      
-      this.players.forEach((player, idx) => {
-        player.order = idx;
-      });
+      this.gameState = "waiting"; // Set game state to waiting if less than 2 players
     }
     return true;
   }
@@ -70,8 +68,8 @@ export class Game implements Game {
     if (player.id !== playerId) {
       return { error: "Not your turn" };
     }
-    if (this.isGameOver) {
-      return { error: "Game is over" };
+    if (this.gameState !== "playing") {
+      return { error: "Game is not in progress" };
     }
 
     let scoreValue: number = 0;
@@ -79,44 +77,36 @@ export class Game implements Game {
     let isWin: boolean = false;
     let turnOver: boolean = false;
 
-    // Calculate score based on segment
-    if (this.gameType === "AroundTheClock") {
-      return {error: "Around the Clock game not implemented yet"};
+    // Calculate score based on segment    
+    const result = calculateX01Score(segment);
+    if (result === null) {
+      return { error: "Invalid segment" };
     }
 
-    // X01 game logic
-    if (this.gameType === "X01") {
-      const result = calculateX01Score(segment);
-      if (result === null) {
-        return { error: "Invalid segment" };
-      }
+    scoreValue = result.score;
+    const previousScore = player.score;
+    player.score -= scoreValue;
 
-      scoreValue = result.score;
-      const previousScore = player.score;
-      player.score -= scoreValue;
+    isBust = checkX01Bust(player.score);
+    isWin = checkX01Win(player.score, result.isDouble, result.isBull);
 
-      isBust = checkX01Bust(player.score);
-      isWin = checkX01Win(player.score, result.isDouble, result.isBull);
-      
-      if (isBust) {
-        player.score = previousScore; // Revert score if bust
-        turnOver = true;
-      } else if (isWin) {
-        this.isGameOver = true;
-        this.winner = player;
-        isWin = true;
-      }
+    if (isBust) {
+      player.score = previousScore; // Revert score if bust
+      turnOver = true;
+    } else if (isWin) {
+      this.gameState = "finished";
+      this.winner = player;
+      isWin = true;
     }
-
+    // Record the throw
     this.dartsThrownThisTurn++;
-    this.lastThrow = { player, segment, score: scoreValue, isBust, isWin };
 
     // Check if turn should end (3 darts or game ending throw)
     if (!turnOver && this.dartsThrownThisTurn >= 3) {
       turnOver = true;
     }
 
-    if (turnOver && !this.isGameOver) {
+    if (turnOver && this.gameState !== "finished") {
       this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
       this.dartsThrownThisTurn = 0;
     }
@@ -128,14 +118,13 @@ export class Game implements Game {
   getCurrentState(): Game {
     return {
       id: this.id,
-      gameType: this.gameType,
-      variant: this.variant,
+      name: this.name,
+      startingScore: this.startingScore,
+      checkoutType: this.checkoutType,
+      maxPlayers: this.maxPlayers,
       players: [...this.players],
       currentPlayerIndex: this.currentPlayerIndex,
-      dartsThrownThisTurn: this.dartsThrownThisTurn,
-      isGameOver: this.isGameOver,
-      winner: this.winner,
-      lastThrow: this.lastThrow,
+      gameState: this.gameState,       
     };
   }
 }

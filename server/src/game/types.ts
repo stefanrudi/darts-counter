@@ -1,5 +1,6 @@
-export type GameType = "X01" | "AroundTheClock";
 export type X01Variant = 501 | 301 | 101;
+export type CheckoutType = "double" | "single";
+export type GameState = "waiting" | "playing" | "finished";
 export type Segment = string; // "S1", "D20", "T18", "25", "BULL"
 
 export interface Throws {
@@ -20,7 +21,9 @@ export interface Game {
   id: string;
   name: string;
   startingScore: number;
-  checkoutType: "double" | "single";
+  checkoutType: CheckoutType;
   maxPlayers: number;
   players: Player[];
+  gameState: GameState;
+  currentPlayerIndex: number;
 }

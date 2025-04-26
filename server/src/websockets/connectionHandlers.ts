@@ -5,9 +5,9 @@ import { CreateGamePayload, JoinGamePayload, LeaveGamePayload, ThrowDartPayload 
 export function handleConnection(socket: Socket, io: SocketIOServer, gameManager: GameManager) {
 
     socket.on('create_game', (payload: CreateGamePayload) => {
-        const { nickname, gameType, variant } = payload;
+        const { gameName, variant, checkoutType, maxPlayers, nickname } = payload;
 
-        const game = gameManager.createGame(gameType, variant);
+        const game = gameManager.createGame(gameName, variant, checkoutType, maxPlayers);
         const player = game.addPlayer(socket.id, nickname);
 
         if (!player) {
@@ -65,7 +65,7 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
             // Notify all players in the game about the new player
             io.to(game.id).emit('game_update', game.getCurrentState());
 
-            if (game.players.length === 0 || game.isGameOver) {
+            if (game.players.length === 0 || game.gameState === "finished") {
                 gameManager.deleteGame(gameId);
             }
         }
@@ -87,8 +87,8 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
             io.to(game.id).emit('game_update', result);
 
             // Check if game ended and maybe clean up
-            if (result.isGameOver) {
-                console.log(`Game ${game.id} ended. Winner: ${result.winner?.name}`);
+            if (result.gameState === 'finished') {
+                //console.log(`Game ${game.id} ended. Winner: ${result.winner?.name}`);
                 gameManager.deleteGame(game.id);
             }
         }
@@ -114,7 +114,7 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
                 io.to(game.id).emit('game_update', game.getCurrentState());
 
                 // If game becomes empty or unplayable, potentially remove it
-                if (game.players.length === 0 || game.isGameOver) {
+                if (game.players.length === 0 || game.gameState === "finished") {
                     console.log(`Removing game ${game.id} after player disconnect.`);
                     gameManager.deleteGame(game.id);
                 }

@@ -1,9 +1,11 @@
-import { GameType, Segment, X01Variant } from "../game/types";
+import { CheckoutType, Segment, X01Variant } from "../game/types";
 
 export interface CreateGamePayload {
+    gameName: string;
     nickname: string;
-    gameType: GameType;
-    variant?: X01Variant;
+    variant: X01Variant;
+    checkoutType: CheckoutType;
+    maxPlayers: number;
 }
 
 export interface JoinGamePayload {
@@ -11,7 +13,7 @@ export interface JoinGamePayload {
     gameId: string;
 }
 
-export interface LeaveGamePayload {    
+export interface LeaveGamePayload {
     gameId: string;
 }
 

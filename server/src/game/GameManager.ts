@@ -1,5 +1,5 @@
 import { Game } from "./Game";
-import { GameType, X01Variant } from "./types";
+import { CheckoutType, X01Variant } from "./types";
 
 export class GameManager {
     private static instance: GameManager;
@@ -18,10 +18,10 @@ export class GameManager {
         return GameManager.instance;
     }
 
-    createGame(type: GameType, variant?: X01Variant): Game {
-        const newGame = new Game(type, variant);
+    createGame(name: string, variant: X01Variant, checkoutType: CheckoutType, maxPlayers: number): Game {
+        const newGame = new Game(name, variant, checkoutType, maxPlayers);
         this.games.set(newGame.id, newGame);
-        console.log(`Game created: ${newGame.id} of type ${type}${variant ? ` (${variant})` : ''}`);
+        console.log(`Game created: ${newGame.id} (Score: ${variant}, Max Players: ${maxPlayers})`);
         return newGame;
     }
 
@@ -49,12 +49,7 @@ export class GameManager {
     }
 
     // Get all available games
-    getAvailableGames(): { gameId: string; gameType: GameType; variant?: X01Variant, playerCount: number }[] {
-        return Array.from(this.games.values()).map((game) => ({
-            gameId: game.id,
-            gameType: game.gameType,
-            variant: game.variant,
-            playerCount: game.players.length,            
-        }));
+    getAvailableGames(): Game[] {
+        return Array.from(this.games.values()).filter(game => game.gameState === "waiting");
     }
 }
