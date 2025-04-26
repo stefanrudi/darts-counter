@@ -1,5 +1,5 @@
 import { calculateX01Score, checkX01Bust, checkX01Win } from "./X01_rules";
-import { CheckoutType, Game, GameState, Player, Segment, Throws, X01Variant } from "./types";
+import { CheckoutType, Game, GameState, Player, Segment, Throw, X01Variant } from "./types";
 import { v4 as uuidv4 } from "uuid";
 
 export class Game implements Game {

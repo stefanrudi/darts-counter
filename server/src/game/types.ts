@@ -3,7 +3,7 @@ export type CheckoutType = "double" | "single";
 export type GameState = "waiting" | "playing" | "finished";
 export type Segment = string; // "S1", "D20", "T18", "25", "BULL"
 
-export interface Throws {
+export interface Throw {
   score: number;
   multiplier: number;
   totalScore: number;
@@ -14,7 +14,7 @@ export interface Player {
   id: string;
   name: string;
   score: number;
-  throws: Throws[];
+  throws: Throw[];
 }
 
 export interface Game {
