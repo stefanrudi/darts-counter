@@ -67,10 +67,6 @@ export function GameLobby() {
   };
 
   const handleJoinGame = (gameId: string) => {
-    if (!gameId.trim()) {
-      alert("Game ID is not defined!");
-      return;
-    }
     const payload = {
       nickname: playerName,
       gameId: gameId.trim()
@@ -108,7 +104,7 @@ export function GameLobby() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Welcome, {playerName}</h2>
+        <h2 className="text-2xl font-semibold">Welcome, {playerName}!</h2>
         <Button variant="outline" onClick={() => setIsNameSet(false)}>
           Change Name
         </Button>

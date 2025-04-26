@@ -1,4 +1,4 @@
-#root {
+/* #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
@@ -96,8 +96,6 @@ h1 {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
-/* Game Lobby */
 .game-lobby {
   display: flex;
   flex-direction: column;
@@ -156,7 +154,6 @@ button:hover {
   font-weight: bold;
 }
 
-/* Game Board */
 .game-board {
   display: flex;
   flex-direction: column;
@@ -265,7 +262,7 @@ button:hover {
   font-weight: bold;
 }
 
-/* Dartboard */
+
 .dartboard-container {
   position: relative;
   display: flex;
@@ -294,7 +291,7 @@ button:hover {
   font-size: 16px;
 }
 
-/* Score displays */
+
 .score-501 {
   font-size: 24px;
   font-weight: bold;
@@ -324,10 +321,11 @@ button:hover {
   font-size: 18px;
 }
 
-/* Responsive design */
+
 @media (max-width: 900px) {
   .game-content {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
   }
 }
+  */

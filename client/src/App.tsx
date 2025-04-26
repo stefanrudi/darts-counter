@@ -6,7 +6,6 @@ import { useGameStore } from "./store/gameStore";
 import { socketService } from "./services/socketService";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GameLobby } from "./components/GameLobby";
-import { PlayerInfo } from "./components/PlayerInfoProps";
 
 function App() {
   const { isConnected, setConnected, setGameState, setMyPlayerId, gameState, myPlayerId } =
@@ -55,18 +54,15 @@ function App() {
 
   return (
     <Router>
-      <div className="app">
-      <header>
-        <h1>Multiplayer Darts Game</h1>
-        <ConnectionStatus isConnected={isConnected} />
-      </header>
+      <main className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold text-center mb-8">Darts Counter</h1>
         
         <Routes>
-          <Route path="/" element={gameState ? <Navigate to={`/game/${gameState.gameId}`} /> : <GameLobby/>} />
-          <Route path="/lobby" element={gameState ? <Navigate to={`/game/${gameState.gameId}`} /> : <GameLobby />} />
+          <Route path="/" element={gameState ? <Navigate to={`/game/${gameState.id}`} /> : <GameLobby/>} />
+          <Route path="/lobby" element={gameState ? <Navigate to={`/game/${gameState.id}`} /> : <GameLobby />} />
           <Route path="/game/:gameId" element={gameState ? <GameBoard /> : <Navigate to="/lobby" />} />
         </Routes>
-        </div>  
+      </main>  
     </Router> 
   );
 }
