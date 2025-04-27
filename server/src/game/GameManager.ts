@@ -101,7 +101,10 @@ export class GameManager {
             return { error: "You must throw 3 darts!" };
         }
 
-        const updatedGame = game.handleThrows(throws);        
+        const updatedGame = game.handleThrows(throws);
+
+        // Replace the game in the GameManager's map to ensure the updated state is stored
+        this.games.set(game.id, updatedGame);
 
         // Check if the game is finished
         if (updatedGame.gameState === "finished") {

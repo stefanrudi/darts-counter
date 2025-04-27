@@ -65,7 +65,7 @@ export class Game implements GameInterface {
 
     // Player not found
     if (index === -1) {
-      return false; 
+      return false;
     }
 
     this.players.splice(index, 1); // Remove player from the game
@@ -74,7 +74,7 @@ export class Game implements GameInterface {
       this.gameState = "waiting"; // Set game state to waiting if less than 2 players
     }
 
-    if(this.players.length === 0) {
+    if (this.players.length === 0) {
       this.gameState = "finished"; // Set game state to finished if no players left
       this.winner = undefined; // Clear winner
     }
@@ -82,12 +82,22 @@ export class Game implements GameInterface {
   }
 
   handleThrows(throws: Throw[]): Game {
+    if (throws.length > 3) {
+      throw new Error("You can only throw 3 darts per turn");
+    }
 
     // Calculate total score for this turn
     const turnScore = throws.reduce((total, t) => total + t.totalScore, 0);
 
     // Check if this would bust (score below 0)
     const newScore = this.currentPlayer!.score - turnScore;
+
+    if (newScore < 0) {
+      // Bust: Do not update the score and do not advance the turn
+      this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+      this.currentPlayer = this.players[this.currentPlayerIndex];
+      return this;
+    }
 
     // Check if this is a checkout
     const isCheckout = newScore === 0;
@@ -96,14 +106,12 @@ export class Game implements GameInterface {
     const isValidCheckout =
       isCheckout &&
       (this.checkoutType === "single" ||
-        (this.checkoutType === "double" && throws[2].multiplier === 2))
-
-
+        (this.checkoutType === "double" && throws[throws.length - 1].multiplier === 2))
 
     // Update player score if valid move
     if (newScore >= 0 && (!isCheckout || isValidCheckout)) {
       // Update current player's score and throws
-      const updatedPlayers = this.players.map((player, index) => {
+      this.players = this.players.map((player, index) => {
         if (index === this.currentPlayerIndex) {
           return {
             ...player,
@@ -115,14 +123,14 @@ export class Game implements GameInterface {
       });
 
       if (isValidCheckout) {
-        this.winner = updatedPlayers[this.currentPlayerIndex];
+        this.winner = this.players[this.currentPlayerIndex];
         this.gameState = "finished";
+      } else {
+        // Move to the next player
+        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+        this.currentPlayer = { ...this.players[this.currentPlayerIndex] };
       }
     }
-
-    // Move to the next player 
-    this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-    this.currentPlayer = this.players[this.currentPlayerIndex];
 
     return this;
   }

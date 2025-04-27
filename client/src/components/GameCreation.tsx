@@ -28,7 +28,7 @@ export function GameCreation({ onCreateGame }: GameCreationProps) {
     name: "New Game",
     startingScore: 501,
     checkoutType: "double",
-    maxPlayers: 4
+    maxPlayers: 2
   });
 
   const handleCreateGame = () => {
