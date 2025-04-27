@@ -20,27 +20,8 @@ import { CreateGamePayload } from "../../../server/src/websockets/types";
 import { GameCreationSettings } from "./GameCreation";
 
 export function GameLobby() {
-  const { myPlayerId } = useGameStore();
-
-  const [playerName, setPlayerName] = useState<string>("");
-  const [isNameSet, setIsNameSet] = useState<boolean>(false);  
+  const { playerName, isNameSet, setPlayerName, setIsNameSet } = useGameStore();
   const [games, setGames] = useState<GameInterface[]>();
-
-  // Set the nickname when myPlayerId changes
-  useEffect(() => {
-    const storedName = localStorage.getItem("nickname");
-    if (storedName) {
-      setPlayerName(storedName);
-      setIsNameSet(true);
-    }
-  }, [myPlayerId]);
-
-  const handleNameSubmit = () => {
-    if (playerName.trim()) {
-      localStorage.setItem("dartsPlayerName", playerName);
-      setIsNameSet(true);
-    }
-  };
 
   // Manage WebSocket events for available games
   useEffect(() => {
@@ -56,6 +37,12 @@ export function GameLobby() {
       socketService.offAvailableGames();
     };
   }, []);
+
+  const handleNameSubmit = () => {
+    if (playerName.trim()) {
+      setIsNameSet(true);
+    }
+  };
 
   const handleCreateGame = (gameSettings: GameCreationSettings) => {
     const payload: CreateGamePayload = {
