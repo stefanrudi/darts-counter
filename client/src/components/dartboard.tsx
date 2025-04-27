@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { socketService } from "../services/socketService";
 import { Position } from "../utils/types";
 
 interface DartboardProps {
@@ -9,7 +8,10 @@ interface DartboardProps {
 export function Dartboard({ onScore }: DartboardProps) {
   const [lastPosition, setLastPosition] = useState<Position | null>(null);
 
-  const [selectedScore, setSelectedScore] = useState<{ score: number; multiplier: number } | null>(null)
+  const [selectedScore, setSelectedScore] = useState<{
+    score: number;
+    multiplier: number;
+  } | null>(null);
 
   // Dartboard properties
   const bullseyeRadius = 12.5;
@@ -29,7 +31,6 @@ export function Dartboard({ onScore }: DartboardProps) {
   const scores = [
     20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5
   ];
-  //const sections = [];
 
   // Precompute sections for the dartboard
   const sections = React.useMemo(() => {
@@ -40,20 +41,7 @@ export function Dartboard({ onScore }: DartboardProps) {
     });
   }, [scores]);
 
-  // // Create sections with correct orientation (20 at top)
-  // for (let i = 0; i < 20; i++) {
-  //   // Offset by -9 degrees (half a segment) so 20 is centered at top
-  //   const startAngle = (i * 18 - 9) * (Math.PI / 180);
-  //   const endAngle = ((i + 1) * 18 - 9) * (Math.PI / 180);
-  //   sections.push({ startAngle, endAngle, score: scores[i] });
-  // }
-
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    // if (!isMyTurn) {
-    //   console.log(`Cannot throw: isMyTurn=${isMyTurn}`);
-    //   return;
-    // }
-
     // Get click coordinates relative to the center of the board
     const rect = e.currentTarget.getBoundingClientRect();
     const centerX = rect.width / 2;
@@ -66,9 +54,12 @@ export function Dartboard({ onScore }: DartboardProps) {
     if (distance <= missableArea) {
       const position: Position = { x, y };
       setLastPosition(position);
-      const segment = calculateSegment(position);
-      // console.log(`Sending throw: ${segment} for game ${gameId}`);
-      // socketService.throwDart({ gameId, segment });
+
+      // Calculate the score and multiplier
+      const { score, multiplier } = calculateSegment(position);
+
+      // Pass the score and multiplier to the parent component
+      onScore(score, multiplier);
     }
   };
 
@@ -108,7 +99,9 @@ export function Dartboard({ onScore }: DartboardProps) {
     return null; // Outside clickable area
   };
 
-  const calculateSegment = (position: Position) => {
+  const calculateSegment = (
+    position: Position
+  ): { score: number; multiplier: number } => {
     const { x, y } = position;
     const distance = Math.sqrt(x * x + y * y);
 
@@ -125,32 +118,20 @@ export function Dartboard({ onScore }: DartboardProps) {
 
     // Determine score multiplier based on distance from center
     if (distance <= bullseyeRadius) {
-      setSelectedScore({ score: 50, multiplier: 2 });
-      onScore(50, 2);
-      return "BULL"; // Bullseye (Double Bull)
+      return { score: 25, multiplier: 2 };
     } else if (distance <= singleBullRadius) {
-      setSelectedScore({ score: 25, multiplier: 1 });
-      onScore(25, 1);
-      return "25"; // Single Bull
+      return { score: 25, multiplier: 1 };
     } else if (distance <= boardEdge) {
       if (distance >= tripleRingInner && distance <= tripleRingOuter) {
-        setSelectedScore({ score: baseScore, multiplier: 3 });
-        onScore(baseScore, 3);
-        return `T${baseScore}`; // Triple
+        return { score: baseScore, multiplier: 3 };
       } else if (distance >= doubleRingInner && distance <= doubleRingOuter) {
-        setSelectedScore({ score: baseScore, multiplier: 2 });
-        onScore(baseScore, 2);
-        return `D${baseScore}`; // Double
+        return { score: baseScore, multiplier: 2 };
       } else {
-        setSelectedScore({ score: baseScore, multiplier: 1 });
-        onScore(baseScore, 1);
-        return `S${baseScore}`; // Single
+        return { score: baseScore, multiplier: 1 };
       }
-    } else if (distance <= missableArea) {
-      return "MISS"; // Missed the board but within missable area
     }
 
-    return null; // Outside clickable area
+    return { score: 0, multiplier: 0 };
   };
 
   const getScoreLabel = (position: Position | null): string => {
@@ -184,7 +165,7 @@ export function Dartboard({ onScore }: DartboardProps) {
         width="500"
         height="500"
         viewBox="-250 -250 500 500"
-        onClick={handleClick}        
+        onClick={handleClick}
       >
         {/* Missable area background */}
         <circle
@@ -349,7 +330,6 @@ export function Dartboard({ onScore }: DartboardProps) {
           <strong>{getScoreLabel(lastPosition)}</strong>
         </div>
       )}
-
     </div>
   );
 }

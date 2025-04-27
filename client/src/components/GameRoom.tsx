@@ -27,6 +27,12 @@ export default function GameRoom({ params }: { params: { id: string } }) {
     }
   }, [currentGame, navigate]);
 
+  useEffect(() => {
+    if (currentGame?.currentPlayer) {
+      setCurrentPlayer(currentGame.currentPlayer);
+    }
+  }, [currentGame]);
+
   // Handle dartboard click
   const handleDartboardScore = (score: number, multiplier: number) => {
     if (!currentGame || !currentPlayer || throwsInTurn.length >= 3) return;
