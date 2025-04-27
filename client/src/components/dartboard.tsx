@@ -8,11 +8,6 @@ interface DartboardProps {
 export function Dartboard({ onScore }: DartboardProps) {
   const [lastPosition, setLastPosition] = useState<Position | null>(null);
 
-  const [selectedScore, setSelectedScore] = useState<{
-    score: number;
-    multiplier: number;
-  } | null>(null);
-
   // Dartboard properties
   const bullseyeRadius = 12.5;
   const singleBullRadius = 31.25;
@@ -63,42 +58,6 @@ export function Dartboard({ onScore }: DartboardProps) {
     }
   };
 
-  // Calculate the score of the last throw (for display purposes)
-  const calculateScore = (position: Position) => {
-    const { x, y } = position;
-    const distance = Math.sqrt(x * x + y * y);
-
-    // Calculate angle in radians, adjust to make 20 at top
-    let angle = Math.atan2(y, x) + Math.PI / 2; // Add π/2 to align with dartboard orientation
-    if (angle < 0) angle += 2 * Math.PI;
-
-    // Adjust angle to match the section orientation
-    angle = (angle + (9 * Math.PI) / 180) % (2 * Math.PI);
-
-    // Determine section (0-19)
-    const sectionIndex = Math.floor((angle * 180) / Math.PI / 18) % 20;
-    const baseScore = scores[sectionIndex];
-
-    // Determine score multiplier based on distance from center
-    if (distance <= bullseyeRadius) {
-      return 50; // Bullseye (Double Bull)
-    } else if (distance <= singleBullRadius) {
-      return 25; // Single Bull
-    } else if (distance <= boardEdge) {
-      if (distance >= tripleRingInner && distance <= tripleRingOuter) {
-        return baseScore * 3; // Triple
-      } else if (distance >= doubleRingInner && distance <= doubleRingOuter) {
-        return baseScore * 2; // Double
-      } else {
-        return baseScore; // Single
-      }
-    } else if (distance <= missableArea) {
-      return 0; // Missed the board but within missable area
-    }
-
-    return null; // Outside clickable area
-  };
-
   const calculateSegment = (
     position: Position
   ): { score: number; multiplier: number } => {
@@ -132,31 +91,6 @@ export function Dartboard({ onScore }: DartboardProps) {
     }
 
     return { score: 0, multiplier: 0 };
-  };
-
-  const getScoreLabel = (position: Position | null): string => {
-    if (!position) return "";
-
-    const score = calculateScore(position);
-    if (score === 0) return "Miss";
-    if (score === 50) return "Bull's Eye (50)";
-    if (score === 25) return "Bull (25)";
-
-    const { x, y } = position;
-    const distance = Math.sqrt(x * x + y * y);
-    let angle = Math.atan2(y, x) + Math.PI / 2;
-    if (angle < 0) angle += 2 * Math.PI;
-    angle = (angle + (9 * Math.PI) / 180) % (2 * Math.PI);
-    const sectionIndex = Math.floor((angle * 180) / Math.PI / 18) % 20;
-    const baseScore = scores[sectionIndex];
-
-    if (distance >= tripleRingInner && distance <= tripleRingOuter) {
-      return `Triple ${baseScore} (${score})`;
-    } else if (distance >= doubleRingInner && distance <= doubleRingOuter) {
-      return `Double ${baseScore} (${score})`;
-    } else {
-      return `${baseScore}`;
-    }
   };
 
   return (
@@ -324,12 +258,6 @@ export function Dartboard({ onScore }: DartboardProps) {
           </>
         )}
       </svg>
-
-      {lastPosition && (
-        <div className="dartboard.last-throw-score">
-          <strong>{getScoreLabel(lastPosition)}</strong>
-        </div>
-      )}
     </div>
   );
 }
