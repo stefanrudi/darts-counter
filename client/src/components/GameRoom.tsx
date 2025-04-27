@@ -64,7 +64,7 @@ export default function GameRoom({ params }: { params: { id: string } }) {
   const handleLeaveGame = () => {
     socketService.leaveGame({ gameId: currentGame!.id });
     setGameState(null);
-    navigate("/lobby"); // Redirect to the lobby or home page
+    //navigate("/lobby"); // Redirect to the lobby or home page
   };
 
   if (!currentGame) {
