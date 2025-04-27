@@ -62,14 +62,21 @@ export class Game implements GameInterface {
 
   removePlayer(socketId: string): boolean {
     const index = this.players.findIndex(player => player.id === socketId);
+
+    // Player not found
     if (index === -1) {
-      return false; // Player not found
+      return false; 
     }
 
     this.players.splice(index, 1); // Remove player from the game
 
     if (this.players.length < 2) {
       this.gameState = "waiting"; // Set game state to waiting if less than 2 players
+    }
+
+    if(this.players.length === 0) {
+      this.gameState = "finished"; // Set game state to finished if no players left
+      this.winner = undefined; // Clear winner
     }
     return true;
   }

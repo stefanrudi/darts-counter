@@ -11,16 +11,21 @@ import { useNavigate, useParams } from "react-router-dom";
 import { socketService } from "@/services/socketService";
 
 export default function GameRoom({ params }: { params: { id: string } }) {
-  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);  
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   const [currentThrow, setCurrentThrow] = useState<Throw | null>(null);
   const [throwsInTurn, setThrowsInTurn] = useState<Throw[]>([]);
-  
-  const {
-    currentGame,
-    myPlayerId,
-    setCurrentGame: setGameState
-  } = useGameStore();
+
+  const { currentGame, setCurrentGame } = useGameStore();
   const navigate = useNavigate();
+
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  // Redirect to the lobby when the game state is cleared
+  useEffect(() => {
+    if (!currentGame) {
+      navigate("/lobby");
+    }
+  }, [currentGame, navigate]);
 
   // Handle dartboard click
   const handleDartboardScore = (score: number, multiplier: number) => {
@@ -61,10 +66,20 @@ export default function GameRoom({ params }: { params: { id: string } }) {
   };
 
   // Leave game and return to lobby
-  const handleLeaveGame = () => {
-    socketService.leaveGame({ gameId: currentGame!.id });
-    setGameState(null);
-    //navigate("/lobby"); // Redirect to the lobby or home page
+  const handleLeaveGame = async () => {
+    if (!currentGame || isLeaving) return;
+    setIsLeaving(true);
+
+    try {
+      // Notify server to remove player from game
+      socketService.leaveGame({ gameId: currentGame.id });
+      setCurrentGame(null);
+    } catch (error) {
+      console.error("Error leaving the game:", error);
+      alert("An error occurred while leaving the game.");
+    } finally {
+      setIsLeaving(false);
+    }
   };
 
   if (!currentGame) {
@@ -75,7 +90,7 @@ export default function GameRoom({ params }: { params: { id: string } }) {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{currentGame?.name}</h1>
-        <Button variant="outline" onClick={handleLeaveGame}>
+        <Button variant="outline" onClick={handleLeaveGame} disabled={isLeaving}>
           Leave Game
         </Button>
       </div>

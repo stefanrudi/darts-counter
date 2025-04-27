@@ -12,7 +12,7 @@ import { GameLobby } from "./components/GameLobby";
 import GameRoom from "./components/GameRoom";
 
 function App() {
-  const { setConnected, setCurrentGame: setGameState, setMyPlayerId, currentGame } =
+  const { setConnected, setCurrentGame, setMyPlayerId, currentGame } =
     useGameStore();
 
   useEffect(() => {
@@ -28,7 +28,7 @@ function App() {
         socketService.onGameUpdate((newGameState) => {
           console.log("Received game state update:", newGameState);
           if (isMounted) {
-            setGameState(newGameState);
+            setCurrentGame(newGameState);
           }
         });
         socketService.onPlayerJoined((data) => {
@@ -50,10 +50,10 @@ function App() {
       socketService.offPlayerLeft();
 
       setConnected(false);
-      setGameState(null);
+      setCurrentGame(null);
       setMyPlayerId(undefined);
     };
-  }, [setConnected, setGameState, setMyPlayerId]);
+  }, [setConnected, setCurrentGame, setMyPlayerId]);
 
   return (
     <Router>
@@ -83,9 +83,13 @@ function App() {
           />
           <Route
             path="/game/:gameId"
-            element={currentGame ? <GameRoom params={{
-              id: currentGame.id,
-            }} /> : <Navigate to="/lobby" />}
+            element={
+              currentGame ? (
+                <GameRoom params={{ id: currentGame.id }} />
+              ) : (
+                <Navigate to="/lobby" />
+              )
+            }
           />
         </Routes>
       </main>

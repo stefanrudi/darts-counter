@@ -40,6 +40,21 @@ export class GameManager {
         return game;
     }
 
+    removePlayerFromGame(gameId: string, playerId: string): Game | null {
+        const game = this.getGame(gameId);
+        if (!game) {
+            console.log(`Game not found: ${gameId}`);
+            return null;
+        }
+        const removed = game.removePlayer(playerId);
+        if (!removed) {
+            console.log(`Failed to remove player ${playerId} from game ${gameId}`);
+            return null;
+        }
+        console.log(`Player removed: ${playerId} from game ${game.id}`);
+        return game;
+    }
+
     getGame(gameId: string): Game | undefined {
         return this.games.get(gameId);
     }

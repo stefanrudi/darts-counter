@@ -44,25 +44,39 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
 
     socket.on('leave_game', (payload: LeaveGamePayload) => {
         const { gameId } = payload;
-        const game = gameManager.getGame(gameId);
 
-        if (!game) {
-            socket.emit('error_occurred', { message: `Game ${gameId} not found!` });
+        // Attempt to remove the player from the game
+        const updatedGame = gameManager.removePlayerFromGame(gameId, socket.id);
+        if (!updatedGame) {
+            socket.emit('error_occurred', { message: `Failed to leave game ${gameId}.` });
             return;
         }
 
-        const playerId = socket.id;
-        const removed = game.removePlayer(playerId);
-        if (removed) {
-            io.to(gameId).emit("player_left", { playerId });
-            // Notify all players in the game about the new player
-            io.to(game.id).emit('game_update', game.getCurrentState());
+        // Notify all players in the game about the player leaving
+        io.to(gameId).emit("player_left", { socketId: socket.id });
 
-            if (game.players.length === 0 || game.gameState === "finished") {
-                gameManager.deleteGame(gameId);
-            }
+        // If the game still has players, emit the updated game state
+        if (updatedGame.players.length > 0 && updatedGame.gameState !== "finished") {
+            io.to(gameId).emit('game_update', updatedGame.getCurrentState());
+            return;
         }
+
+        // If the game is empty or finished, delete it
+        deleteGame(gameId);
     });
+
+    function deleteGame(gameId: string) {
+        const success = gameManager.deleteGame(gameId);
+        if (!success) {
+            console.log(`Failed to delete game ${gameId}.`);
+            return;
+        }
+        console.log(`Game ${gameId} deleted.`);
+        io.emit('available_games', gameManager.getAllWaitingGames());
+
+        // Notify all clients that the game has been deleted
+        io.to(gameId).emit('game_update', null);
+    }
 
     socket.on('throw_dart', (payload: ThrowDartPayload) => {
         const { gameId, throws } = payload;
