@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
-import { GameInterface } from '../../../server/src/game/types';
 import { CreateGamePayload, JoinGamePayload, ThrowDartPayload, LeaveGamePayload } from '../../../server/src/websockets/types';
+import { Game } from '../../../server/src/game/Game';
 
 const SERVER_URL = 'http://localhost:3001';
 
@@ -74,7 +74,7 @@ class SocketService {
     }
 
     // --- Listener Functions ---
-    onGameUpdate(listener: (gameState: GameInterface) => void) {
+    onGameUpdate(listener: (gameState: Game) => void) {
         this.socket?.on('game_update', listener);
     }
 

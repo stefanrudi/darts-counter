@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import GameBoard from "./components/GameBoard";
 import "./App.css";
 import { useGameStore } from "./store/gameStore";
 import { socketService } from "./services/socketService";
@@ -13,7 +12,7 @@ import { GameLobby } from "./components/GameLobby";
 import GameRoom from "./components/GameRoom";
 
 function App() {
-  const { setConnected, setCurrentGame: setGameState, setMyPlayerId, currentGame: gameState } =
+  const { setConnected, setCurrentGame: setGameState, setMyPlayerId, currentGame } =
     useGameStore();
 
   useEffect(() => {
@@ -65,8 +64,8 @@ function App() {
           <Route
             path="/"
             element={
-              gameState ? (
-                <Navigate to={`/game/${gameState.id}`} />
+              currentGame ? (
+                <Navigate to={`/game/${currentGame.id}`} />
               ) : (
                 <GameLobby />
               )
@@ -75,8 +74,8 @@ function App() {
           <Route
             path="/lobby"
             element={
-              gameState ? (
-                <Navigate to={`/game/${gameState.id}`} />
+              currentGame ? (
+                <Navigate to={`/game/${currentGame.id}`} />
               ) : (
                 <GameLobby />
               )
@@ -84,8 +83,8 @@ function App() {
           />
           <Route
             path="/game/:gameId"
-            element={gameState ? <GameRoom params={{
-              id: gameState.id,
+            element={currentGame ? <GameRoom params={{
+              id: currentGame.id,
             }} /> : <Navigate to="/lobby" />}
           />
         </Routes>
