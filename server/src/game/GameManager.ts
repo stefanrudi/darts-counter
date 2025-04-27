@@ -1,11 +1,11 @@
 import { Game } from "./Game";
-import { CheckoutType, X01Variant } from "./types";
+import { CheckoutType, Player, Throw } from "./types";
 
 export class GameManager {
     private static instance: GameManager;
     private games: Map<string, Game> = new Map();
 
-    private constructor() {}
+    private constructor() { }
 
     /**
      * 
@@ -18,7 +18,7 @@ export class GameManager {
         return GameManager.instance;
     }
 
-    createGame(name: string, variant: X01Variant, checkoutType: CheckoutType, maxPlayers: number): Game {
+    createGame(name: string, variant: number, checkoutType: CheckoutType, maxPlayers: number): Game {
         const newGame = new Game(name, variant, checkoutType, maxPlayers);
         this.games.set(newGame.id, newGame);
         console.log(`Game created: ${newGame.id} (Score: ${variant}, Max Players: ${maxPlayers})`);
@@ -33,6 +33,10 @@ export class GameManager {
         return Array.from(this.games.values());
     }
 
+    getAllWaitingGames(): Game[] {
+        return Array.from(this.games.values()).filter(game => game.gameState === "waiting");
+    }
+
     deleteGame(gameId: string): boolean {
         console.log(`Game deleted: ${gameId}`);
         return this.games.delete(gameId);
@@ -45,11 +49,36 @@ export class GameManager {
                 return game;
             }
         }
-        return undefined;        
+        return undefined;
     }
 
-    // Get all available games
-    getAvailableGames(): Game[] {
-        return Array.from(this.games.values()).filter(game => game.gameState === "waiting");
+    getCurrentPlayer(gameId: string): Player | null {
+        const game = this.getGame(gameId);
+        if (!game) {
+            return null;
+        }
+        return game.currentPlayer;
+    }
+
+    handleThrows(playerId: string, game: Game, throws: Throw[]): Game | { error: string } {
+        if (game?.currentPlayer?.id !== playerId) {
+            return { error: "It's not your turn!" };
+        }
+        if (game.gameState !== "playing") {
+            return { error: "Game is not in progress!" };
+        }
+        if (throws.length !== 3) {
+            return { error: "You must throw 3 darts!" };
+        }
+
+        const updatedGame = game.handleThrows(throws);        
+
+        // Check if the game is finished
+        if (updatedGame.gameState === "finished") {
+            // Handle game finished logic here, e.g., notify players, clean up
+            console.log(`Game ${game.id} finished. Winner: ${updatedGame.winner?.name}`);
+            this.deleteGame(game.id);
+        }
+        return updatedGame;
     }
 }

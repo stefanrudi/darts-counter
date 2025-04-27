@@ -17,7 +17,7 @@ export interface Player {
   throws: Throw[];
 }
 
-export interface Game {
+export interface GameInterface {
   id: string;
   name: string;
   startingScore: number;
@@ -25,5 +25,6 @@ export interface Game {
   maxPlayers: number;
   players: Player[];
   gameState: GameState;
-  currentPlayerIndex: number;
+  currentPlayer: Player | null;
+  winner?: Player;
 }

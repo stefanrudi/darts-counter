@@ -1,4 +1,4 @@
-import { CheckoutType, Segment, X01Variant } from "../game/types";
+import { CheckoutType, Segment, Throw, X01Variant } from "../game/types";
 
 export interface CreateGamePayload {
     gameName: string;
@@ -19,5 +19,5 @@ export interface LeaveGamePayload {
 
 export interface ThrowDartPayload {
     gameId: string;
-    segment: Segment;
+    throws: Throw[];
 }

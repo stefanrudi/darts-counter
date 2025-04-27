@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { Game } from '../../../server/src/game/types';
+import { GameInterface } from '../../../server/src/game/types';
 
 interface GameStoreState {
     isConnected: boolean;
-    gameState: Game | null;
+    gameState: GameInterface | null;
     myPlayerId: string | null;
     setConnected: (status: boolean) => void;
-    setGameState: (state: Game | null) => void;
+    setGameState: (state: GameInterface | null) => void;
     setMyPlayerId: (id: string | undefined) => void;    
 }
 

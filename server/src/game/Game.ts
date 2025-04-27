@@ -1,8 +1,7 @@
-import { calculateX01Score, checkX01Bust, checkX01Win } from "./X01_rules";
-import { CheckoutType, Game, GameState, Player, Segment, Throw, X01Variant } from "./types";
+import { CheckoutType, GameInterface, GameState, Player, Throw } from "./types";
 import { v4 as uuidv4 } from "uuid";
 
-export class Game implements Game {
+export class Game implements GameInterface {
   id: string;
   name: string;
   startingScore: number;
@@ -11,6 +10,7 @@ export class Game implements Game {
   gameState: GameState;
 
   players: Player[] = [];
+  currentPlayer: Player | null = null;
   currentPlayerIndex: number = 0;
   dartsThrownThisTurn: number = 0;
   winner?: Player;
@@ -24,22 +24,20 @@ export class Game implements Game {
     this.gameState = "waiting";
   }
 
-
-
-  addPlayer(socketId: string, nickname: string): Player | null {
+  addPlayer(playerId: string, nickname: string): Player | null {
     // Check if the game is full
-    if (this.players.length >= this.maxPlayers) {
-      return null; // Game is full
+    if (this.players.length >= this.maxPlayers || this.gameState !== "waiting") {
+      return null;
     }
 
     // Check if the player is already in the game
-    if (this.players.find(player => player.id === socketId)) {
+    if (this.players.find(p => p.id === playerId)) {
       return null;
     }
 
     // Create a new player
     const newPlayer: Player = {
-      id: socketId,
+      id: playerId,
       name: nickname,
       score: this.startingScore,
       throws: [],
@@ -63,59 +61,54 @@ export class Game implements Game {
     return true;
   }
 
-  handleThrow(playerId: string, segment: Segment): Game | { error: string } {
-    const player = this.players[this.currentPlayerIndex];
-    if (player.id !== playerId) {
-      return { error: "Not your turn" };
-    }
-    if (this.gameState !== "playing") {
-      return { error: "Game is not in progress" };
-    }
+  handleThrows(throws: Throw[]): Game {
 
-    let scoreValue: number = 0;
-    let isBust: boolean = false;
-    let isWin: boolean = false;
-    let turnOver: boolean = false;
+    // Calculate total score for this turn
+    const turnScore = throws.reduce((total, t) => total + t.totalScore, 0);
 
-    // Calculate score based on segment    
-    const result = calculateX01Score(segment);
-    if (result === null) {
-      return { error: "Invalid segment" };
-    }
+    // Check if this would bust (score below 0)
+    const newScore = this.currentPlayer!.score - turnScore;
 
-    scoreValue = result.score;
-    const previousScore = player.score;
-    player.score -= scoreValue;
+    // Check if this is a checkout
+    const isCheckout = newScore === 0;
 
-    isBust = checkX01Bust(player.score);
-    isWin = checkX01Win(player.score, result.isDouble, result.isBull);
+    // Check if checkout is valid (double required for double checkout)
+    const isValidCheckout =
+      isCheckout &&
+      (this.checkoutType === "single" ||
+        (this.checkoutType === "double" && throws[2].multiplier === 2))
 
-    if (isBust) {
-      player.score = previousScore; // Revert score if bust
-      turnOver = true;
-    } else if (isWin) {
-      this.gameState = "finished";
-      this.winner = player;
-      isWin = true;
-    }
-    // Record the throw
-    this.dartsThrownThisTurn++;
 
-    // Check if turn should end (3 darts or game ending throw)
-    if (!turnOver && this.dartsThrownThisTurn >= 3) {
-      turnOver = true;
+
+    // Update player score if valid move
+    if (newScore >= 0 && (!isCheckout || isValidCheckout)) {
+      // Update current player's score and throws
+      const updatedPlayers = this.players.map((player, index) => {
+        if (index === this.currentPlayerIndex) {
+          return {
+            ...player,
+            score: newScore,
+            throws: [...player.throws, ...throws],
+          }
+        }
+        return player;
+      });
+
+      if (isValidCheckout) {
+        this.winner = updatedPlayers[this.currentPlayerIndex];
+        this.gameState = "finished";
+      }
     }
 
-    if (turnOver && this.gameState !== "finished") {
-      this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-      this.dartsThrownThisTurn = 0;
-    }
+    // Move to the next player 
+    this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+    this.currentPlayer = this.players[this.currentPlayerIndex];
 
-    return this.getCurrentState();
+    return this;
   }
 
   // Return a copy of the current game state
-  getCurrentState(): Game {
+  getCurrentState() {
     return {
       id: this.id,
       name: this.name,
@@ -123,8 +116,10 @@ export class Game implements Game {
       checkoutType: this.checkoutType,
       maxPlayers: this.maxPlayers,
       players: [...this.players],
-      currentPlayerIndex: this.currentPlayerIndex,
-      gameState: this.gameState,       
+      currentPlayer: this.currentPlayer,
+      gameState: this.gameState,
+      winner: this.winner
     };
   }
 }
+

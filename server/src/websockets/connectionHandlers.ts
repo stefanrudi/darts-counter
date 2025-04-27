@@ -23,7 +23,7 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
         socket.emit('game_update', game.getCurrentState());
 
         // Notify all clients about the updated list of available games
-        io.emit('available_games', gameManager.getAvailableGames());
+        io.emit('available_games', gameManager.getAllWaitingGames());
     });
 
     socket.on('join_game', (payload: JoinGamePayload) => {
@@ -72,14 +72,14 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
     });
 
     socket.on('throw_dart', (payload: ThrowDartPayload) => {
-        const { gameId, segment } = payload;
+        const { gameId, throws } = payload;
         const game = gameManager.getGame(gameId);
         if (!game) {
             socket.emit('error_occurred', { message: `Game ${payload.gameId} not found.` });
             return;
         }
 
-        const result = game.handleThrow(socket.id, segment);
+        const result = gameManager.handleThrows(socket.id, game, throws);
         if ('error' in result) {
             socket.emit('error_occurred', { message: result.error });
         } else {
@@ -88,14 +88,14 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
 
             // Check if game ended and maybe clean up
             if (result.gameState === 'finished') {
-                //console.log(`Game ${game.id} ended. Winner: ${result.winner?.name}`);
-                gameManager.deleteGame(game.id);
+                console.log(`Game ${game.id} ended. Winner: ${result.winner?.name}`);
+                // gameManager.deleteGame(game.id);
             }
         }
     });
 
     socket.on('get_available_games', () => {
-        const availableGames = gameManager.getAvailableGames();
+        const availableGames = gameManager.getAllWaitingGames();
         socket.emit('available_games', availableGames);
     });
 
