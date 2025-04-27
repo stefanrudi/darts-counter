@@ -53,11 +53,11 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
         }
 
         // Notify all players in the game about the player leaving
-        io.to(gameId).emit("player_left", { socketId: socket.id });
+        socket.broadcast.to(gameId).emit("player_left", { socketId: socket.id });
 
         // If the game still has players, emit the updated game state
         if (updatedGame.players.length > 0 && updatedGame.gameState !== "finished") {
-            io.to(gameId).emit('game_update', updatedGame.getCurrentState());
+            socket.broadcast.to(gameId).emit('game_update', updatedGame.getCurrentState());
             return;
         }
 
