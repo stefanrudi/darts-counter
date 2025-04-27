@@ -3,11 +3,11 @@ import { Player } from "../../../server/src/game/types"
 
 interface PlayerListProps {
   players: Player[]
-  currentPlayerIndex: number
+  currentPlayerId: string
   startingScore: number
 }
 
-export function PlayerList({ players, currentPlayerIndex, startingScore }: PlayerListProps) {
+export function PlayerList({ players, currentPlayerId, startingScore }: PlayerListProps) {
   return (
     <Card>
       <CardHeader>
@@ -15,11 +15,11 @@ export function PlayerList({ players, currentPlayerIndex, startingScore }: Playe
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {players.map((player, index) => (
+          {players.map((player) => (
             <div
               key={player.id}
               className={`p-3 rounded-lg ${
-                index === currentPlayerIndex ? "bg-primary text-primary-foreground" : "bg-muted"
+                player.id === currentPlayerId ? "bg-primary text-primary-foreground" : "bg-muted"
               }`}
             >
               <div className="flex justify-between items-center">

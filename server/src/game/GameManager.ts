@@ -25,6 +25,21 @@ export class GameManager {
         return newGame;
     }
 
+    addPlayerToGame(gameId: string, playerId: string, nickname: string): Game | null {
+        const game = this.getGame(gameId);
+        if (!game) {
+            console.log(`Game not found: ${gameId}`);
+            return null;
+        }
+        const player = game.addPlayer(playerId, nickname);
+        if (!player) {
+            console.log(`Failed to add player ${nickname} to game ${gameId}`);
+            return null;
+        }
+        console.log(`Player added: ${player.name} (${player.id}) to game ${game.id}`);
+        return game;
+    }
+
     getGame(gameId: string): Game | undefined {
         return this.games.get(gameId);
     }

@@ -3,12 +3,13 @@ import { socketService } from "../services/socketService";
 import { Position } from "../utils/types";
 
 interface DartboardProps {
-  gameId: string;
-  isMyTurn: boolean;
+  onScore: (score: number, multiplier: number) => void;
 }
 
-export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
+export function Dartboard({ onScore }: DartboardProps) {
   const [lastPosition, setLastPosition] = useState<Position | null>(null);
+
+  const [selectedScore, setSelectedScore] = useState<{ score: number; multiplier: number } | null>(null)
 
   // Dartboard properties
   const bullseyeRadius = 12.5;
@@ -48,10 +49,10 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
   // }
 
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!isMyTurn) {
-      console.log(`Cannot throw: isMyTurn=${isMyTurn}`);
-      return;
-    }
+    // if (!isMyTurn) {
+    //   console.log(`Cannot throw: isMyTurn=${isMyTurn}`);
+    //   return;
+    // }
 
     // Get click coordinates relative to the center of the board
     const rect = e.currentTarget.getBoundingClientRect();
@@ -66,8 +67,8 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
       const position: Position = { x, y };
       setLastPosition(position);
       const segment = calculateSegment(position);
-      console.log(`Sending throw: ${segment} for game ${gameId}`);
-      socketService.throwDart({ gameId, segment });
+      // console.log(`Sending throw: ${segment} for game ${gameId}`);
+      // socketService.throwDart({ gameId, segment });
     }
   };
 
@@ -124,15 +125,25 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
 
     // Determine score multiplier based on distance from center
     if (distance <= bullseyeRadius) {
+      setSelectedScore({ score: 50, multiplier: 2 });
+      onScore(50, 2);
       return "BULL"; // Bullseye (Double Bull)
     } else if (distance <= singleBullRadius) {
+      setSelectedScore({ score: 25, multiplier: 1 });
+      onScore(25, 1);
       return "25"; // Single Bull
     } else if (distance <= boardEdge) {
       if (distance >= tripleRingInner && distance <= tripleRingOuter) {
+        setSelectedScore({ score: baseScore, multiplier: 3 });
+        onScore(baseScore, 3);
         return `T${baseScore}`; // Triple
       } else if (distance >= doubleRingInner && distance <= doubleRingOuter) {
+        setSelectedScore({ score: baseScore, multiplier: 2 });
+        onScore(baseScore, 2);
         return `D${baseScore}`; // Double
       } else {
+        setSelectedScore({ score: baseScore, multiplier: 1 });
+        onScore(baseScore, 1);
         return `S${baseScore}`; // Single
       }
     } else if (distance <= missableArea) {
@@ -173,8 +184,7 @@ export function Dartboard({ gameId, isMyTurn }: DartboardProps) {
         width="500"
         height="500"
         viewBox="-250 -250 500 500"
-        onClick={handleClick}
-        className={`dartboard ${isMyTurn ? "clickable" : "read-only"}`}
+        onClick={handleClick}        
       >
         {/* Missable area background */}
         <circle

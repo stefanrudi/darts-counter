@@ -1,20 +1,20 @@
 import { create } from 'zustand';
-import { GameInterface } from '../../../server/src/game/types';
+import { Game } from '../../../server/src/game/Game';
 
 interface GameStoreState {
     isConnected: boolean;
-    gameState: GameInterface | null;
+    currentGame: Game | null;
     myPlayerId: string | null;
     setConnected: (status: boolean) => void;
-    setGameState: (state: GameInterface | null) => void;
+    setCurrentGame: (state: Game | null) => void;
     setMyPlayerId: (id: string | undefined) => void;    
 }
 
 export const useGameStore = create<GameStoreState>((set) => ({
     isConnected: false,
-    gameState: null,
+    currentGame: null,
     myPlayerId: null,
     setConnected: (status) => set({ isConnected: status }),
-    setGameState: (state) => set({ gameState: state }),
+    setCurrentGame: (state) => set({ currentGame: state }),
     setMyPlayerId: (id) => set({ myPlayerId: id }),
 }));

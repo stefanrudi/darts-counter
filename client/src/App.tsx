@@ -10,9 +10,10 @@ import {
   Navigate
 } from "react-router-dom";
 import { GameLobby } from "./components/GameLobby";
+import GameRoom from "./components/GameRoom";
 
 function App() {
-  const { setConnected, setGameState, setMyPlayerId, gameState } =
+  const { setConnected, setCurrentGame: setGameState, setMyPlayerId, currentGame: gameState } =
     useGameStore();
 
   useEffect(() => {
@@ -83,7 +84,9 @@ function App() {
           />
           <Route
             path="/game/:gameId"
-            element={gameState ? <GameBoard /> : <Navigate to="/lobby" />}
+            element={gameState ? <GameRoom params={{
+              id: gameState.id,
+            }} /> : <Navigate to="/lobby" />}
           />
         </Routes>
       </main>

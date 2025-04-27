@@ -29,24 +29,17 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
     socket.on('join_game', (payload: JoinGamePayload) => {
         const { nickname, gameId } = payload;
 
-        const game = gameManager.getGame(gameId);
-
-        if (!game) {
-            socket.emit('error_occurred', { message: `Game ${gameId} not found!` });
-            return;
-        }
-
-        const player = game.addPlayer(socket.id, nickname);
-        if (!player) {
+        const updatedGame = gameManager.addPlayerToGame(gameId, socket.id, nickname);
+        if (!updatedGame) {
             socket.emit('error_occurred', { message: `Failed to join game ${gameId} to the game.` });
             return;
         }
 
-        socket.join(game.id);
-        console.log(`Player ${player.name} (${socket.id}) joined game ${game.id}`);
+        socket.join(gameId);
+        console.log(`Player ${nickname} (${socket.id}) joined game ${gameId}`);
 
         // Notify all players in the game about the new player
-        io.to(game.id).emit('game_update', game.getCurrentState());
+        io.to(gameId).emit('game_update', updatedGame.getCurrentState());
     });
 
     socket.on('leave_game', (payload: LeaveGamePayload) => {

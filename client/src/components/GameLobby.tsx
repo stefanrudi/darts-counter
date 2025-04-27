@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Game } from "../../../server/src/game/types";
+import { GameInterface } from "../../../server/src/game/types";
 import { socketService } from "../services/socketService";
 import { useGameStore } from "../store/gameStore";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ export function GameLobby() {
 
   const [playerName, setPlayerName] = useState<string>("");
   const [isNameSet, setIsNameSet] = useState<boolean>(false);  
-  const [games, setGames] = useState<Game[]>();
+  const [games, setGames] = useState<GameInterface[]>();
 
   // Set the nickname when myPlayerId changes
   useEffect(() => {

@@ -5,7 +5,7 @@ import { socketService } from "../services/socketService";
 
 export function GameBoard() {
   const { gameId } = useParams<{ gameId: string }>();
-  const { gameState, myPlayerId, setGameState } = useGameStore();
+  const { currentGame: gameState, myPlayerId, setCurrentGame: setGameState } = useGameStore();
   const navigate = useNavigate();
 
   if (!gameState || gameState.id !== gameId) {

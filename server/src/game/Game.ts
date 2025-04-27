@@ -24,6 +24,15 @@ export class Game implements GameInterface {
     this.gameState = "waiting";
   }
 
+  startGame(): void {
+    if (this.players.length < 2) {
+      throw new Error("Not enough players to start the game");
+    }
+    this.gameState = "playing";
+    this.currentPlayerIndex = 0;
+    this.currentPlayer = this.players[this.currentPlayerIndex];
+  }
+
   addPlayer(playerId: string, nickname: string): Player | null {
     // Check if the game is full
     if (this.players.length >= this.maxPlayers || this.gameState !== "waiting") {
@@ -43,6 +52,10 @@ export class Game implements GameInterface {
       throws: [],
     };
     this.players.push(newPlayer);
+
+    if (this.players.length === this.maxPlayers) {
+      this.startGame();
+    }
 
     return newPlayer;
   }

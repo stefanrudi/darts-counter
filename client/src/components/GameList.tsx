@@ -8,11 +8,11 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import type { Game } from "../../../server/src/game/types";
 import { Users } from "lucide-react";
+import { GameInterface } from "../../../server/src/game/types";
 
 interface GameListProps {
-  games: Game[];
+  games: GameInterface[];
   onJoinGame: (gameId: string) => void;
 }
 
