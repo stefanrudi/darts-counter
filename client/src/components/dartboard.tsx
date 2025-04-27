@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Position } from "../utils/types";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 interface DartboardProps {
   onScore: (score: number, multiplier: number) => void;
 }
@@ -94,171 +96,180 @@ export function Dartboard({ onScore }: DartboardProps) {
   };
 
   return (
-    <div className="dartboard-container">
-      <svg
-        width="500"
-        height="500"
-        viewBox="-250 -250 500 500"
-        onClick={handleClick}
-      >
-        {/* Missable area background */}
-        <circle
-          cx="0"
-          cy="0"
-          r={missableArea}
-          fill="#4C3A32"
-          stroke="#000"
-          strokeWidth="2"
-        />
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-center">Dartboard</CardTitle>
+      </CardHeader>
+      <CardContent className="flex justify-center">
+        <div className="dartboard-container">
+          <svg
+            width="500"
+            height="500"
+            viewBox="-250 -250 500 500"
+            onClick={handleClick}
+          >
+            {/* Missable area background */}
+            <circle
+              cx="0"
+              cy="0"
+              r={missableArea}
+              fill="#4C3A32"
+              stroke="#000"
+              strokeWidth="2"
+            />
 
-        {/* Board edge (surround) */}
-        <circle
-          cx="0"
-          cy="0"
-          r={boardEdge}
-          fill="#321A10"
-          stroke="#000"
-          strokeWidth="2"
-        />
+            {/* Board edge (surround) */}
+            <circle
+              cx="0"
+              cy="0"
+              r={boardEdge}
+              fill="#321A10"
+              stroke="#000"
+              strokeWidth="2"
+            />
 
-        {/* Number label ring */}
-        <circle
-          cx="0"
-          cy="0"
-          r="210"
-          fill="none"
-          stroke="#321A10"
-          strokeWidth="0"
-        />
+            {/* Number label ring */}
+            <circle
+              cx="0"
+              cy="0"
+              r="210"
+              fill="none"
+              stroke="#321A10"
+              strokeWidth="0"
+            />
 
-        {/* Dartboard sections */}
-        {sections.map((section, idx) => {
-          const colorIndex = idx % 2;
-          return (
-            <g key={idx}>
-              {/* Main section */}
-              <path
-                d={`M 0 0 
+            {/* Dartboard sections */}
+            {sections.map((section, idx) => {
+              const colorIndex = idx % 2;
+              return (
+                <g key={idx}>
+                  {/* Main section */}
+                  <path
+                    d={`M 0 0 
                     L ${doubleRingOuter * Math.sin(section.startAngle)} ${
-                  -doubleRingOuter * Math.cos(section.startAngle)
-                } 
+                      -doubleRingOuter * Math.cos(section.startAngle)
+                    } 
                     A ${doubleRingOuter} ${doubleRingOuter} 0 0 1 
                     ${doubleRingOuter * Math.sin(section.endAngle)} ${
-                  -doubleRingOuter * Math.cos(section.endAngle)
-                } 
+                      -doubleRingOuter * Math.cos(section.endAngle)
+                    } 
                     Z`}
-                fill={boardColors[colorIndex]}
-                stroke="#333"
-                strokeWidth="0.5"
-              />
+                    fill={boardColors[colorIndex]}
+                    stroke="#333"
+                    strokeWidth="0.5"
+                  />
 
-              {/* Double ring */}
-              <path
-                d={`M ${doubleRingInner * Math.sin(section.startAngle)} ${
-                  -doubleRingInner * Math.cos(section.startAngle)
-                } 
+                  {/* Double ring */}
+                  <path
+                    d={`M ${doubleRingInner * Math.sin(section.startAngle)} ${
+                      -doubleRingInner * Math.cos(section.startAngle)
+                    } 
                     L ${doubleRingOuter * Math.sin(section.startAngle)} ${
-                  -doubleRingOuter * Math.cos(section.startAngle)
-                } 
+                      -doubleRingOuter * Math.cos(section.startAngle)
+                    } 
                     A ${doubleRingOuter} ${doubleRingOuter} 0 0 1 
                     ${doubleRingOuter * Math.sin(section.endAngle)} ${
-                  -doubleRingOuter * Math.cos(section.endAngle)
-                } 
+                      -doubleRingOuter * Math.cos(section.endAngle)
+                    } 
                     L ${doubleRingInner * Math.sin(section.endAngle)} ${
-                  -doubleRingInner * Math.cos(section.endAngle)
-                } 
+                      -doubleRingInner * Math.cos(section.endAngle)
+                    } 
                     A ${doubleRingInner} ${doubleRingInner} 0 0 0 
                     ${doubleRingInner * Math.sin(section.startAngle)} ${
-                  -doubleRingInner * Math.cos(section.startAngle)
-                } 
+                      -doubleRingInner * Math.cos(section.startAngle)
+                    } 
                     Z`}
-                fill={ringColors[colorIndex % 2]}
-                stroke="#333"
-                strokeWidth="0.5"
-              />
+                    fill={ringColors[colorIndex % 2]}
+                    stroke="#333"
+                    strokeWidth="0.5"
+                  />
 
-              {/* Triple ring */}
-              <path
-                d={`M ${tripleRingInner * Math.sin(section.startAngle)} ${
-                  -tripleRingInner * Math.cos(section.startAngle)
-                } 
+                  {/* Triple ring */}
+                  <path
+                    d={`M ${tripleRingInner * Math.sin(section.startAngle)} ${
+                      -tripleRingInner * Math.cos(section.startAngle)
+                    } 
                     L ${tripleRingOuter * Math.sin(section.startAngle)} ${
-                  -tripleRingOuter * Math.cos(section.startAngle)
-                } 
+                      -tripleRingOuter * Math.cos(section.startAngle)
+                    } 
                     A ${tripleRingOuter} ${tripleRingOuter} 0 0 1 
                     ${tripleRingOuter * Math.sin(section.endAngle)} ${
-                  -tripleRingOuter * Math.cos(section.endAngle)
-                } 
+                      -tripleRingOuter * Math.cos(section.endAngle)
+                    } 
                     L ${tripleRingInner * Math.sin(section.endAngle)} ${
-                  -tripleRingInner * Math.cos(section.endAngle)
-                } 
+                      -tripleRingInner * Math.cos(section.endAngle)
+                    } 
                     A ${tripleRingInner} ${tripleRingInner} 0 0 0 
                     ${tripleRingInner * Math.sin(section.startAngle)} ${
-                  -tripleRingInner * Math.cos(section.startAngle)
-                } 
+                      -tripleRingInner * Math.cos(section.startAngle)
+                    } 
                     Z`}
-                fill={ringColors[colorIndex % 2]}
-                stroke="#333"
-                strokeWidth="0.5"
-              />
+                    fill={ringColors[colorIndex % 2]}
+                    stroke="#333"
+                    strokeWidth="0.5"
+                  />
 
-              {/* Improved section number labels - outer ring with better visibility */}
-              <g>
-                {/* Section number */}
-                <text
-                  x={
-                    190 * Math.sin((section.startAngle + section.endAngle) / 2)
-                  }
-                  y={
-                    -190 * Math.cos((section.startAngle + section.endAngle) / 2)
-                  }
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="white"
-                  fontSize="14"
-                  fontWeight="bold"
-                >
-                  {section.score}
-                </text>
-              </g>
-            </g>
-          );
-        })}
+                  {/* Improved section number labels - outer ring with better visibility */}
+                  <g>
+                    {/* Section number */}
+                    <text
+                      x={
+                        190 *
+                        Math.sin((section.startAngle + section.endAngle) / 2)
+                      }
+                      y={
+                        -190 *
+                        Math.cos((section.startAngle + section.endAngle) / 2)
+                      }
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill="white"
+                      fontSize="14"
+                      fontWeight="bold"
+                    >
+                      {section.score}
+                    </text>
+                  </g>
+                </g>
+              );
+            })}
 
-        {/* Bull's eye (inner and outer bull) */}
-        <circle
-          cx="0"
-          cy="0"
-          r={singleBullRadius}
-          fill={ringColors[0]}
-          stroke="#333"
-          strokeWidth="0.5"
-        />
-        <circle
-          cx="0"
-          cy="0"
-          r={bullseyeRadius}
-          fill={ringColors[1]}
-          stroke="#333"
-          strokeWidth="0.5"
-        />
-
-        {/* Show last throw position if any */}
-        {lastPosition && (
-          <>
-            {/* Dart head */}
+            {/* Bull's eye (inner and outer bull) */}
             <circle
-              cx={lastPosition.x}
-              cy={lastPosition.y}
-              r="5"
-              fill="yellow"
-              stroke="black"
-              strokeWidth="1"
+              cx="0"
+              cy="0"
+              r={singleBullRadius}
+              fill={ringColors[0]}
+              stroke="#333"
+              strokeWidth="0.5"
             />
-          </>
-        )}
-      </svg>
-    </div>
+            <circle
+              cx="0"
+              cy="0"
+              r={bullseyeRadius}
+              fill={ringColors[1]}
+              stroke="#333"
+              strokeWidth="0.5"
+            />
+
+            {/* Show last throw position if any */}
+            {lastPosition && (
+              <>
+                {/* Dart head */}
+                <circle
+                  cx={lastPosition.x}
+                  cy={lastPosition.y}
+                  r="5"
+                  fill="yellow"
+                  stroke="black"
+                  strokeWidth="1"
+                />
+              </>
+            )}
+          </svg>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
