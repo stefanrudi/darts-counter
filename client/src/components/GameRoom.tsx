@@ -9,16 +9,18 @@ import { ThrowHistory } from "./ThrowHistory";
 import { useGameStore } from "@/store/gameStore";
 import { useNavigate, useParams } from "react-router-dom";
 import { socketService } from "@/services/socketService";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Loader2 } from "lucide-react";
 
 export default function GameRoom({ params }: { params: { id: string } }) {
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   const [currentThrow, setCurrentThrow] = useState<Throw | null>(null);
   const [throwsInTurn, setThrowsInTurn] = useState<Throw[]>([]);
-
-  const { currentGame, setCurrentGame } = useGameStore();
-  const navigate = useNavigate();
-
+  const [isLocalPlayerTurn, setIsLocalPlayerTurn] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false);
+  const { currentGame, setCurrentGame, myPlayerId } = useGameStore();
+
+  const navigate = useNavigate();
 
   // Redirect to the lobby when the game state is cleared
   useEffect(() => {
@@ -30,12 +32,13 @@ export default function GameRoom({ params }: { params: { id: string } }) {
   useEffect(() => {
     if (currentGame?.currentPlayer) {
       setCurrentPlayer(currentGame.currentPlayer);
+      setIsLocalPlayerTurn(currentGame.currentPlayer.id === myPlayerId);
     }
   }, [currentGame]);
 
   // Handle dartboard click
   const handleDartboardScore = (score: number, multiplier: number) => {
-    if (!currentGame || !currentPlayer || throwsInTurn.length >= 3) return;
+    if (!currentGame || !currentPlayer || !isLocalPlayerTurn || throwsInTurn.length >= 3) return;
 
     const throwScore = score * multiplier;
     const newThrow: Throw = {
@@ -51,7 +54,7 @@ export default function GameRoom({ params }: { params: { id: string } }) {
 
   // Submit current turn
   const handleSubmitTurn = () => {
-    if (!currentGame || !currentPlayer || throwsInTurn.length === 0) return;
+    if (!currentGame || !currentPlayer || !isLocalPlayerTurn || throwsInTurn.length === 0) return;
 
     socketService.throwDart({
       gameId: currentGame.id,
@@ -103,10 +106,10 @@ export default function GameRoom({ params }: { params: { id: string } }) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
+          {isLocalPlayerTurn ? (
+            // Show active player UI
           <div className="bg-muted p-4 rounded-lg">
-            <h2 className="text-xl font-semibold mb-2">
-              Current Turn: {currentPlayer?.name}
-            </h2>
+            <h2 className="text-xl font-semibold mb-2">Your Turn</h2>
             <div className="flex space-x-2 mb-4">
               {[0, 1, 2].map((index) => (
                 <div
@@ -118,23 +121,29 @@ export default function GameRoom({ params }: { params: { id: string } }) {
               ))}
             </div>
             <div className="flex space-x-2">
-              <Button
-                onClick={handleSubmitTurn}
-                disabled={throwsInTurn.length === 0}
-              >
+              <Button onClick={handleSubmitTurn} disabled={throwsInTurn.length === 0}>
                 Submit Turn
               </Button>
-              <Button
-                variant="outline"
-                onClick={handleResetTurn}
-                disabled={throwsInTurn.length === 0}
-              >
+              <Button variant="outline" onClick={handleResetTurn} disabled={throwsInTurn.length === 0}>
                 Reset
               </Button>
             </div>
           </div>
-
-          <Dartboard onScore={handleDartboardScore} />
+          ) : (
+            // Show waiting (inactive player) UI
+            <Card className="bg-muted">
+              <CardHeader>
+                <CardTitle>Waiting for {currentPlayer?.name}'s turn</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center py-6">
+                <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+                <p className="text-center text-muted-foreground">
+                  It's currently {currentPlayer?.name}'s turn to throw.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+          <Dartboard onScore={handleDartboardScore} disabled={!isLocalPlayerTurn} />
         </div>
 
         <div className="space-y-6">

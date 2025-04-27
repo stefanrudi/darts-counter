@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Player } from "../../../server/src/game/types"
+import { useGameStore } from "@/store/gameStore"
 
 interface PlayerListProps {
   players: Player[]
@@ -8,6 +9,7 @@ interface PlayerListProps {
 }
 
 export function PlayerList({ players, currentPlayerId, startingScore }: PlayerListProps) {
+  const { myPlayerId } = useGameStore();
   return (
     <Card>
       <CardHeader>
@@ -23,7 +25,10 @@ export function PlayerList({ players, currentPlayerId, startingScore }: PlayerLi
               }`}
             >
               <div className="flex justify-between items-center">
-                <div className="font-medium">{player.name}</div>
+                <div className="font-medium">
+                  {player.name}
+                  {player.id === myPlayerId && " (You)"}                  
+                </div>
                 <div className="text-xl font-bold">{player.score}</div>
               </div>
               <div className="w-full bg-background/20 h-2 mt-2 rounded-full overflow-hidden">

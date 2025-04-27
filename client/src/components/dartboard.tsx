@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface DartboardProps {
   onScore: (score: number, multiplier: number) => void;
+  disabled?: boolean;
 }
 
-export function Dartboard({ onScore }: DartboardProps) {
+export function Dartboard({ onScore, disabled = false }: DartboardProps) {
   const [lastPosition, setLastPosition] = useState<Position | null>(null);
 
   // Dartboard properties
@@ -96,9 +97,9 @@ export function Dartboard({ onScore }: DartboardProps) {
   };
 
   return (
-    <Card>
+    <Card className={disabled ? "opacity-70" : ""}>
       <CardHeader>
-        <CardTitle className="text-center">Dartboard</CardTitle>
+        <CardTitle>Dartboard {disabled && "- Waiting for your turn"}</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center">
         <div className="dartboard-container">
@@ -268,6 +269,11 @@ export function Dartboard({ onScore }: DartboardProps) {
             )}
           </svg>
         </div>
+        {disabled && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-full">
+                <div className="text-lg font-medium text-white bg-black/50 px-4 py-2 rounded-md">Not your turn</div>
+              </div>
+            )}
       </CardContent>
     </Card>
   );
