@@ -107,8 +107,8 @@ export class GameManager {
         if (game.gameState !== "playing") {
             return { error: "Game is not in progress!" };
         }
-        if (throws.length !== 3) {
-            return { error: "You must throw 3 darts!" };
+        if (throws.length > 3) {
+            return { error: "You can only throw up to 3 darts per turn." };
         }
 
         const updatedGame = game.handleThrows(throws);

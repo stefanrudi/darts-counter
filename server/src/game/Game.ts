@@ -82,8 +82,12 @@ export class Game implements GameInterface {
   }
 
   handleThrows(throws: Throw[]): Game {
+    if (this.gameState === "finished") {
+      throw new Error("The game is already finished.");
+    }
+
     if (throws.length > 3) {
-      throw new Error("You can only throw 3 darts per turn");
+      throw new Error("Invalid number of throws. A player can throw up to 3 darts per turn.");
     }
 
     // Calculate total score for this turn
@@ -92,10 +96,10 @@ export class Game implements GameInterface {
     // Check if this would bust (score below 0)
     const newScore = this.currentPlayer!.score - turnScore;
 
-    if (newScore < 0) {
+    if (newScore < 0 || (this.checkoutType === "double" && newScore === 1)) {
       // Bust: Do not update the score and do not advance the turn
       this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-      this.currentPlayer = this.players[this.currentPlayerIndex];
+      this.currentPlayer = { ...this.players[this.currentPlayerIndex] };
       return this;
     }
 
@@ -125,12 +129,13 @@ export class Game implements GameInterface {
       if (isValidCheckout) {
         this.winner = this.players[this.currentPlayerIndex];
         this.gameState = "finished";
-      } else {
-        // Move to the next player
-        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-        this.currentPlayer = { ...this.players[this.currentPlayerIndex] };
+        return this;
       }
+
     }
+    // Move to the next player
+    this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+    this.currentPlayer = { ...this.players[this.currentPlayerIndex] };
 
     return this;
   }
