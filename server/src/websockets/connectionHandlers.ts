@@ -5,9 +5,9 @@ import { CreateGamePayload, JoinGamePayload, LeaveGamePayload, ThrowDartPayload 
 export function handleConnection(socket: Socket, io: SocketIOServer, gameManager: GameManager) {
 
     socket.on('create_game', (payload: CreateGamePayload) => {
-        const { nickname, gameType, variant } = payload;
+        const { gameName, variant, checkoutType, maxPlayers, nickname } = payload;
 
-        const game = gameManager.createGame(gameType, variant);
+        const game = gameManager.createGame(gameName, variant, checkoutType, maxPlayers);
         const player = game.addPlayer(socket.id, nickname);
 
         if (!player) {
@@ -23,63 +23,84 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
         socket.emit('game_update', game.getCurrentState());
 
         // Notify all clients about the updated list of available games
-        io.emit('available_games', gameManager.getAvailableGames());
+        io.emit('available_games', gameManager.getAllWaitingGames());
+    });
+
+    socket.on('start_game', (payload: { gameId: string }) => {
+        const { gameId } = payload;
+
+        const game = gameManager.getGame(gameId);
+        if (!game) {
+            socket.emit('error_occurred', { message: `Game ${gameId} not found.` });
+            return;
+        }
+        gameManager.startGame(gameId);
+
+        console.log(`Game ${game.id} started.`);
+        io.to(game.id).emit('game_update', game.getCurrentState());
     });
 
     socket.on('join_game', (payload: JoinGamePayload) => {
         const { nickname, gameId } = payload;
 
-        const game = gameManager.getGame(gameId);
-
-        if (!game) {
-            socket.emit('error_occurred', { message: `Game ${gameId} not found!` });
-            return;
-        }
-
-        const player = game.addPlayer(socket.id, nickname);
-        if (!player) {
+        const updatedGame = gameManager.addPlayerToGame(gameId, socket.id, nickname);
+        if (!updatedGame) {
             socket.emit('error_occurred', { message: `Failed to join game ${gameId} to the game.` });
             return;
         }
 
-        socket.join(game.id);
-        console.log(`Player ${player.name} (${socket.id}) joined game ${game.id}`);
+        socket.join(gameId);
+        console.log(`Player ${nickname} (${socket.id}) joined game ${gameId}`);
 
         // Notify all players in the game about the new player
-        io.to(game.id).emit('game_update', game.getCurrentState());
+        io.to(gameId).emit('game_update', updatedGame.getCurrentState());
     });
 
     socket.on('leave_game', (payload: LeaveGamePayload) => {
         const { gameId } = payload;
-        const game = gameManager.getGame(gameId);
 
-        if (!game) {
-            socket.emit('error_occurred', { message: `Game ${gameId} not found!` });
+        // Attempt to remove the player from the game
+        const updatedGame = gameManager.removePlayerFromGame(gameId, socket.id);
+        if (!updatedGame) {
+            socket.emit('error_occurred', { message: `Failed to leave game ${gameId}.` });
             return;
         }
 
-        const playerId = socket.id;
-        const removed = game.removePlayer(playerId);
-        if (removed) {
-            io.to(gameId).emit("player_left", { playerId });
-            // Notify all players in the game about the new player
-            io.to(game.id).emit('game_update', game.getCurrentState());
+        // Notify all players in the game about the player leaving
+        socket.broadcast.to(gameId).emit("player_left", { socketId: socket.id });
 
-            if (game.players.length === 0 || game.isGameOver) {
-                gameManager.deleteGame(gameId);
-            }
+        // If the game still has players, emit the updated game state
+        if (updatedGame.players.length > 0 && updatedGame.gameState !== "finished") {
+            socket.broadcast.to(gameId).emit('game_update', updatedGame.getCurrentState());
+            return;
         }
+
+        // If the game is empty or finished, delete it
+        deleteGame(gameId);
     });
 
+    function deleteGame(gameId: string) {
+        const success = gameManager.deleteGame(gameId);
+        if (!success) {
+            console.log(`Failed to delete game ${gameId}.`);
+            return;
+        }
+        console.log(`Game ${gameId} deleted.`);
+        io.emit('available_games', gameManager.getAllWaitingGames());
+
+        // Notify all clients that the game has been deleted
+        io.to(gameId).emit('game_update', null);
+    }
+
     socket.on('throw_dart', (payload: ThrowDartPayload) => {
-        const { gameId, segment } = payload;
+        const { gameId, throws } = payload;
         const game = gameManager.getGame(gameId);
         if (!game) {
             socket.emit('error_occurred', { message: `Game ${payload.gameId} not found.` });
             return;
         }
 
-        const result = game.handleThrow(socket.id, segment);
+        const result = gameManager.handleThrows(socket.id, game, throws);
         if ('error' in result) {
             socket.emit('error_occurred', { message: result.error });
         } else {
@@ -87,15 +108,15 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
             io.to(game.id).emit('game_update', result);
 
             // Check if game ended and maybe clean up
-            if (result.isGameOver) {
+            if (result.gameState === 'finished') {
                 console.log(`Game ${game.id} ended. Winner: ${result.winner?.name}`);
-                gameManager.deleteGame(game.id);
+                // gameManager.deleteGame(game.id);
             }
         }
     });
 
     socket.on('get_available_games', () => {
-        const availableGames = gameManager.getAvailableGames();
+        const availableGames = gameManager.getAllWaitingGames();
         socket.emit('available_games', availableGames);
     });
 
@@ -114,7 +135,7 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
                 io.to(game.id).emit('game_update', game.getCurrentState());
 
                 // If game becomes empty or unplayable, potentially remove it
-                if (game.players.length === 0 || game.isGameOver) {
+                if (game.players.length === 0 || game.gameState === "finished") {
                     console.log(`Removing game ${game.id} after player disconnect.`);
                     gameManager.deleteGame(game.id);
                 }

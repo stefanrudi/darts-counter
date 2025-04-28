@@ -1,26 +1,31 @@
-export type GameType = "X01" | "AroundTheClock";
 export type X01Variant = 501 | 301 | 101;
+export type CheckoutType = "double" | "single";
+export type GameState = "waiting" | "playing" | "finished";
 export type Segment = string; // "S1", "D20", "T18", "25", "BULL"
 
-export interface Throws {
+export interface Throw {
   score: number;
   multiplier: number;
   totalScore: number;
-  timestamp: string;
+  timestamp: string;  
+  valid: boolean;
 }
 
 export interface Player {
   id: string;
   name: string;
   score: number;
-  throws: Throws[];
+  throws: Throw[];
 }
 
-export interface Game {
+export interface GameInterface {
   id: string;
   name: string;
   startingScore: number;
-  checkoutType: "double" | "single";
+  checkoutType: CheckoutType;
   maxPlayers: number;
   players: Player[];
+  gameState: GameState;
+  currentPlayer: Player | null;
+  winner?: Player;
 }

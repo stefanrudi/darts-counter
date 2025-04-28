@@ -1,15 +1,17 @@
 import { useEffect } from "react";
-import GameBoard from "./components/GameBoard";
-import "./App.css";
-import ConnectionStatus from "./components/ConnectionStatus";
 import { useGameStore } from "./store/gameStore";
 import { socketService } from "./services/socketService";
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate
+} from "react-router-dom";
 import { GameLobby } from "./components/GameLobby";
-import { PlayerInfo } from "./components/PlayerInfoProps";
+import GameRoom from "./components/GameRoom";
 
 function App() {
-  const { isConnected, setConnected, setGameState, setMyPlayerId, gameState, myPlayerId } =
+  const { setConnected, setCurrentGame, setMyPlayerId, currentGame } =
     useGameStore();
 
   useEffect(() => {
@@ -25,7 +27,7 @@ function App() {
         socketService.onGameUpdate((newGameState) => {
           console.log("Received game state update:", newGameState);
           if (isMounted) {
-            setGameState(newGameState);
+            setCurrentGame(newGameState);
           }
         });
         socketService.onPlayerJoined((data) => {
@@ -47,27 +49,50 @@ function App() {
       socketService.offPlayerLeft();
 
       setConnected(false);
-      setGameState(null);
+      setCurrentGame(null);
       setMyPlayerId(undefined);
     };
-  }, [setConnected, setGameState, setMyPlayerId]);
-
+  }, [setConnected, setCurrentGame, setMyPlayerId]);
 
   return (
     <Router>
-      <div className="app">
-      <header>
-        <h1>Multiplayer Darts Game</h1>
-        <ConnectionStatus isConnected={isConnected} />
-      </header>
-        
+      <main className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold text-center mb-8">Darts Counter</h1>
+
         <Routes>
-          <Route path="/" element={gameState ? <Navigate to={`/game/${gameState.gameId}`} /> : <GameLobby/>} />
-          <Route path="/lobby" element={gameState ? <Navigate to={`/game/${gameState.gameId}`} /> : <GameLobby />} />
-          <Route path="/game/:gameId" element={gameState ? <GameBoard /> : <Navigate to="/lobby" />} />
+          <Route
+            path="/"
+            element={
+              currentGame ? (
+                <Navigate to={`/game/${currentGame.id}`} />
+              ) : (
+                <GameLobby />
+              )
+            }
+          />
+          <Route
+            path="/lobby"
+            element={
+              currentGame ? (
+                <Navigate to={`/game/${currentGame.id}`} />
+              ) : (
+                <GameLobby />
+              )
+            }
+          />
+          <Route
+            path="/game/:gameId"
+            element={
+              currentGame ? (
+                <GameRoom params={{ id: currentGame.id }} />
+              ) : (
+                <Navigate to="/lobby" />
+              )
+            }
+          />
         </Routes>
-        </div>  
-    </Router> 
+      </main>
+    </Router>
   );
 }
 
