@@ -26,6 +26,20 @@ export function handleConnection(socket: Socket, io: SocketIOServer, gameManager
         io.emit('available_games', gameManager.getAllWaitingGames());
     });
 
+    socket.on('start_game', (payload: { gameId: string }) => {
+        const { gameId } = payload;
+
+        const game = gameManager.getGame(gameId);
+        if (!game) {
+            socket.emit('error_occurred', { message: `Game ${gameId} not found.` });
+            return;
+        }
+        gameManager.startGame(gameId);
+
+        console.log(`Game ${game.id} started.`);
+        io.to(game.id).emit('game_update', game.getCurrentState());
+    });
+
     socket.on('join_game', (payload: JoinGamePayload) => {
         const { nickname, gameId } = payload;
 

@@ -269,11 +269,6 @@ export function Dartboard({ onScore, disabled = false }: DartboardProps) {
             )}
           </svg>
         </div>
-        {disabled && (
-              <div className="absolute inset-0 flex items-center justify-center rounded-full">
-                <div className="text-lg font-medium text-white bg-black/50 px-4 py-2 rounded-md">Not your turn</div>
-              </div>
-            )}
       </CardContent>
     </Card>
   );

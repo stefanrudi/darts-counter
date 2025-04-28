@@ -57,6 +57,10 @@ class SocketService {
         this.emit('create_game', payload);
     }
 
+    startGame(payload: { gameId: string }) {
+        this.emit('start_game', payload);
+    }
+
     joinGame(payload: JoinGamePayload) {
         this.emit('join_game', payload);
     }

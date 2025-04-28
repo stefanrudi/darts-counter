@@ -1,15 +1,20 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Player } from "../../../server/src/game/types"
-import { useGameStore } from "@/store/gameStore"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Player } from "../../../server/src/game/types";
+import { useGameStore } from "@/store/gameStore";
+import { UserPlus } from "lucide-react";
 
 interface PlayerListProps {
-  players: Player[]
-  currentPlayerId: string
-  startingScore: number
+  players: Player[];
+  currentPlayerId: string;
+  startingScore: number;
 }
 
-export function PlayerList({ players, currentPlayerId, startingScore }: PlayerListProps) {
-  const { myPlayerId } = useGameStore();
+export function PlayerList({
+  players,
+  currentPlayerId,
+  startingScore
+}: PlayerListProps) {
+  const { myPlayerId, currentGame } = useGameStore();
   return (
     <Card>
       <CardHeader>
@@ -21,13 +26,15 @@ export function PlayerList({ players, currentPlayerId, startingScore }: PlayerLi
             <div
               key={player.id}
               className={`p-3 rounded-lg ${
-                player.id === currentPlayerId ? "bg-primary text-primary-foreground" : "bg-muted"
+                player.id === currentPlayerId
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted"
               }`}
             >
               <div className="flex justify-between items-center">
                 <div className="font-medium">
                   {player.name}
-                  {player.id === myPlayerId && " (You)"}                  
+                  {player.id === myPlayerId && " (You)"}
                 </div>
                 <div className="text-xl font-bold">{player.score}</div>
               </div>
@@ -35,14 +42,21 @@ export function PlayerList({ players, currentPlayerId, startingScore }: PlayerLi
                 <div
                   className="bg-background/60 h-full rounded-full"
                   style={{
-                    width: `${100 - (player.score / startingScore) * 100}%`,
+                    width: `${100 - (player.score / startingScore) * 100}%`
                   }}
                 />
               </div>
             </div>
           ))}
+
+          {players.length < currentGame!.maxPlayers && currentGame?.gameState === "waiting" && (
+            <div className="p-3 rounded-lg border border-dashed border-muted-foreground/30 flex items-center justify-center text-muted-foreground">
+              <UserPlus className="w-4 h-4 mr-2" />
+              <span>Waiting for more players...</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
