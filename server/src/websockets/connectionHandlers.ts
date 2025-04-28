@@ -5,9 +5,9 @@ import { CreateGamePayload, JoinGamePayload, LeaveGamePayload, ThrowDartPayload 
 export function handleConnection(socket: Socket, io: SocketIOServer, gameManager: GameManager) {
 
     socket.on('create_game', (payload: CreateGamePayload) => {
-        const { gameName, variant, checkoutType, maxPlayers, nickname } = payload;
+        const { gameName, variant, checkoutType, maxPlayers, nickname, legsToWin } = payload;
 
-        const game = gameManager.createGame(gameName, variant, checkoutType, maxPlayers);
+        const game = gameManager.createGame(gameName, variant, checkoutType, maxPlayers, legsToWin);
         const player = game.addPlayer(socket.id, nickname);
 
         if (!player) {

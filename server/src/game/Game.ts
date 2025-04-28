@@ -8,19 +8,24 @@ export class Game implements GameInterface {
   checkoutType: CheckoutType;
   maxPlayers: number;
   gameState: GameState;
+  bestOf: number;
+  currentLeg: number;
 
   players: Player[] = [];
   currentPlayer: Player | null = null;
   currentPlayerIndex: number = 0;
   dartsThrownThisTurn: number = 0;
+  legWinner?: Player;
   winner?: Player;
 
-  constructor(name: string, startingScore: number, checkoutType: CheckoutType, maxPlayers: number) {
+  constructor(name: string, startingScore: number, checkoutType: CheckoutType, maxPlayers: number, bestOf: number) {
     this.id = uuidv4();
     this.name = name;
     this.startingScore = startingScore;
     this.checkoutType = checkoutType;
     this.maxPlayers = maxPlayers;
+    this.bestOf = bestOf;
+    this.currentLeg = 1;
     this.gameState = "waiting";
   }
 
@@ -50,6 +55,7 @@ export class Game implements GameInterface {
       name: nickname,
       score: this.startingScore,
       throws: [],
+      legsWon: 0
     };
     this.players.push(newPlayer);
 
@@ -128,8 +134,27 @@ export class Game implements GameInterface {
 
     // Handle win
     if (isValidCheckout) {
-      this.winner = this.currentPlayer;
-      this.gameState = "finished";
+      const legsToWin = Math.ceil(this.bestOf / 2);
+      if (this.currentPlayer.legsWon + 1 >= legsToWin) {
+        this.winner = this.currentPlayer;
+        this.gameState = "finished";
+        return this;
+      }
+      // Handle leg win
+      this.currentLeg += 1; 
+      this.currentPlayer!.legsWon += 1;
+      this.legWinner = this.currentPlayer;
+
+      // Reset scores for the next leg
+      this.players = this.players.map((player) => ({
+        ...player,
+        score: this.startingScore,
+        //throws: [],
+      }));
+
+      // Ensure leg winner starts next leg
+      this.currentPlayerIndex = this.players.findIndex(player => player.id === this.currentPlayer!.id);
+      this.currentPlayer = this.players[this.currentPlayerIndex];
       return this;
     }
 
@@ -151,7 +176,10 @@ export class Game implements GameInterface {
       players: [...this.players],
       currentPlayer: this.currentPlayer,
       gameState: this.gameState,
-      winner: this.winner
+      winner: this.winner,
+      currentLeg: this.currentLeg,
+      legWinner: this.legWinner,
+      bestOf: this.bestOf
     };
   }
 }

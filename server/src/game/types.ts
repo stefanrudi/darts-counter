@@ -8,7 +8,7 @@ export interface Throw {
   multiplier: number;
   totalScore: number;
   timestamp: string;  
-  valid: boolean;
+  valid?: boolean;
 }
 
 export interface Player {
@@ -16,6 +16,7 @@ export interface Player {
   name: string;
   score: number;
   throws: Throw[];
+  legsWon: number;
 }
 
 export interface GameInterface {
@@ -24,6 +25,8 @@ export interface GameInterface {
   startingScore: number;
   checkoutType: CheckoutType;
   maxPlayers: number;
+  bestOf: number;
+  currentLeg: number;
   players: Player[];
   gameState: GameState;
   currentPlayer: Player | null;

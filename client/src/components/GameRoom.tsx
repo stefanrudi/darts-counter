@@ -9,18 +9,24 @@ import { ThrowHistory } from "./ThrowHistory";
 import { useGameStore } from "@/store/gameStore";
 import { useNavigate, useParams } from "react-router-dom";
 import { socketService } from "@/services/socketService";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "./ui/card";
 import { Loader2, Users } from "lucide-react";
 import { WinScreen } from "./WinScreen";
 
 export default function GameRoom({ params }: { params: { id: string } }) {
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   const [currentThrow, setCurrentThrow] = useState<Throw | null>(null);
-  const [throwsInTurn, setThrowsInTurn] = useState<Throw[]>([]);  
-  const [isLocalPlayerTurn, setIsLocalPlayerTurn] = useState(false)
+  const [throwsInTurn, setThrowsInTurn] = useState<Throw[]>([]);
+  const [isLocalPlayerTurn, setIsLocalPlayerTurn] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isGameStarted, setIsGameStarted] = useState(false);
-  const [isCreator, setIsCreator] = useState(false);  
+  const [isCreator, setIsCreator] = useState(false);
 
   const { currentGame, setCurrentGame, myPlayerId } = useGameStore();
   const navigate = useNavigate();
@@ -44,7 +50,13 @@ export default function GameRoom({ params }: { params: { id: string } }) {
 
   // Handle dartboard click
   const handleDartboardScore = (score: number, multiplier: number) => {
-    if (!currentGame || !currentPlayer || !isLocalPlayerTurn || throwsInTurn.length >= 3) return;
+    if (
+      !currentGame ||
+      !currentPlayer ||
+      !isLocalPlayerTurn ||
+      throwsInTurn.length >= 3
+    )
+      return;
 
     const throwScore = score * multiplier;
     const newThrow: Throw = {
@@ -60,7 +72,13 @@ export default function GameRoom({ params }: { params: { id: string } }) {
 
   // Submit current turn
   const handleSubmitTurn = () => {
-    if (!currentGame || !currentPlayer || !isLocalPlayerTurn || throwsInTurn.length === 0) return;
+    if (
+      !currentGame ||
+      !currentPlayer ||
+      !isLocalPlayerTurn ||
+      throwsInTurn.length === 0
+    )
+      return;
 
     socketService.throwDart({
       gameId: currentGame.id,
@@ -81,7 +99,7 @@ export default function GameRoom({ params }: { params: { id: string } }) {
   };
 
   const handleBackToLobby = () => {
-    if (!currentGame) return;    
+    if (!currentGame) return;
     setCurrentGame(null);
     navigate("/lobby");
   };
@@ -113,27 +131,39 @@ export default function GameRoom({ params }: { params: { id: string } }) {
     return <div className="container mx-auto p-4">Loading game...</div>;
   }
 
-  const canStartGame = isCreator && currentGame.players.length >= 2 && !isGameStarted;
+  const canStartGame =
+    isCreator && currentGame.players.length >= 2 && !isGameStarted;
 
   return (
     <div className="container mx-auto p-4">
-      {currentGame.winner && <WinScreen winner={currentGame.winner} onBackToLobby={handleBackToLobby} />}
+      {currentGame.winner && (
+        <WinScreen
+          winner={currentGame.winner}
+          onBackToLobby={handleBackToLobby}
+          isMatchWinner={!!currentGame.winner}          
+        />
+      )}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">{currentGame?.name}</h1>        
-        <Button variant="outline" onClick={handleLeaveGame} disabled={isLeaving}>
+        <h1 className="text-2xl font-bold">{currentGame?.name}</h1>
+        <Button
+          variant="outline"
+          onClick={handleLeaveGame}
+          disabled={isLeaving}
+        >
           Leave Game
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
-        {!isGameStarted ? (
+          {!isGameStarted ? (
             // Show waiting for players UI
             <Card className="bg-muted">
               <CardHeader>
                 <CardTitle>Waiting for players to join</CardTitle>
                 <CardDescription>
-                  {currentGame.players.length} / {currentGame.maxPlayers} players have joined
+                  {currentGame.players.length} / {currentGame.maxPlayers}{" "}
+                  players have joined
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-center py-6">
@@ -145,7 +175,11 @@ export default function GameRoom({ params }: { params: { id: string } }) {
                 </p>
 
                 {isCreator && (
-                  <Button onClick={handleStartGame} disabled={!canStartGame} size="lg">
+                  <Button
+                    onClick={handleStartGame}
+                    disabled={!canStartGame}
+                    size="lg"
+                  >
                     Start Game
                   </Button>
                 )}
@@ -153,28 +187,35 @@ export default function GameRoom({ params }: { params: { id: string } }) {
             </Card>
           ) : isLocalPlayerTurn && !currentGame.winner ? (
             // Show active player UI
-          <div className="bg-muted p-4 rounded-lg">
-            <h2 className="text-xl font-semibold mb-2">Your Turn</h2>
-            <div className="flex space-x-2 mb-4">
-              {[0, 1, 2].map((index) => (
-                <div
-                  key={index}
-                  className="w-16 h-16 border rounded-lg flex items-center justify-center text-xl font-bold"
+            <div className="bg-muted p-4 rounded-lg">
+              <h2 className="text-xl font-semibold mb-2">Your Turn</h2>
+              <div className="flex space-x-2 mb-4">
+                {[0, 1, 2].map((index) => (
+                  <div
+                    key={index}
+                    className="w-16 h-16 border rounded-lg flex items-center justify-center text-xl font-bold"
+                  >
+                    {throwsInTurn[index] ? throwsInTurn[index].totalScore : "-"}
+                  </div>
+                ))}
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={handleSubmitTurn}
+                  disabled={throwsInTurn.length === 0}
                 >
-                  {throwsInTurn[index] ? throwsInTurn[index].totalScore : "-"}
-                </div>
-              ))}
+                  Submit Turn
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleResetTurn}
+                  disabled={throwsInTurn.length === 0}
+                >
+                  Reset
+                </Button>
+              </div>
             </div>
-            <div className="flex space-x-2">
-              <Button onClick={handleSubmitTurn} disabled={throwsInTurn.length === 0}>
-                Submit Turn
-              </Button>
-              <Button variant="outline" onClick={handleResetTurn} disabled={throwsInTurn.length === 0}>
-                Reset
-              </Button>
-            </div>
-          </div>
-          ) : !currentGame.winner? (
+          ) : !currentGame.winner ? (
             // Show waiting (inactive player) UI
             <Card className="bg-muted">
               <CardHeader>
@@ -188,7 +229,12 @@ export default function GameRoom({ params }: { params: { id: string } }) {
               </CardContent>
             </Card>
           ) : null}
-          <Dartboard onScore={handleDartboardScore} disabled={!isLocalPlayerTurn || !isGameStarted || !!currentGame.winner} />
+          <Dartboard
+            onScore={handleDartboardScore}
+            disabled={
+              !isLocalPlayerTurn || !isGameStarted || !!currentGame.winner
+            }
+          />
         </div>
 
         <div className="space-y-6">
@@ -196,10 +242,12 @@ export default function GameRoom({ params }: { params: { id: string } }) {
             players={currentGame!.players}
             currentPlayerId={currentGame?.currentPlayer?.id || ""}
             startingScore={currentGame!.startingScore}
-            localPlayerId={myPlayerId || ""}
-            winner={currentGame.winner}
+            localPlayerId={myPlayerId || ""}
+            winner={currentGame.legWinner}
+            bestOf={currentGame.bestOf}
+            currentLeg={currentGame.currentLeg}
           />
-          
+
           <ThrowHistory players={currentGame!.players} />
         </div>
       </div>

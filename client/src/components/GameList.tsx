@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import { GameInterface } from "../../../server/src/game/types";
+import { Badge } from "./ui/badge";
 
 interface GameListProps {
   games: GameInterface[];
@@ -52,9 +53,12 @@ export function GameList({ games, onJoinGame }: GameListProps) {
                 <div className="text-sm text-muted-foreground">
                   {game.startingScore} points, {game.checkoutType} checkout
                 </div>
-                <div className="flex items-center mt-1 text-sm text-muted-foreground">
-                  <Users className="w-4 h-4 mr-1" />
-                  {game.players.length} / {game.maxPlayers} players
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Users className="w-4 h-4 mr-1" />
+                    {game.players.length} / {game.maxPlayers} players
+                  </div>
+                  <Badge variant="outline">Best of {game.bestOf}</Badge>
                 </div>
               </div>
               <Button onClick={() => onJoinGame(game.id)}>Join</Button>

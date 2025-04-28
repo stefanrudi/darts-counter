@@ -18,8 +18,8 @@ export class GameManager {
         return GameManager.instance;
     }
 
-    createGame(name: string, variant: number, checkoutType: CheckoutType, maxPlayers: number): Game {
-        const newGame = new Game(name, variant, checkoutType, maxPlayers);
+    createGame(name: string, variant: number, checkoutType: CheckoutType, maxPlayers: number, legsToWin: number): Game {
+        const newGame = new Game(name, variant, checkoutType, maxPlayers, legsToWin);
         this.games.set(newGame.id, newGame);
         console.log(`Game created: ${newGame.id} (Score: ${variant}, Max Players: ${maxPlayers})`);
         return newGame;

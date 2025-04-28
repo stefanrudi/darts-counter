@@ -18,6 +18,7 @@ export interface GameCreationSettings {
   startingScore: number;
   checkoutType: "double" | "single";
   maxPlayers: number;
+  legsToWin: number;
 }
 interface GameCreationProps {
   onCreateGame: (gameSettings: GameCreationSettings) => void;
@@ -28,7 +29,8 @@ export function GameCreation({ onCreateGame }: GameCreationProps) {
     name: "New Game",
     startingScore: 501,
     checkoutType: "double",
-    maxPlayers: 2
+    maxPlayers: 2,
+    legsToWin: 1
   });
 
   const handleCreateGame = () => {
@@ -98,6 +100,33 @@ export function GameCreation({ onCreateGame }: GameCreationProps) {
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="single" id="checkout-single" />
               <Label htmlFor="checkout-single">Single Checkout</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Best of</Label>
+          <RadioGroup
+            defaultValue={gameSettings.legsToWin.toString()}
+            onValueChange={(value) =>
+              setGameSettings({
+                ...gameSettings,
+                legsToWin: Number.parseInt(value)
+              })
+            }
+            className="flex space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="1" id="best-of-1" />
+              <Label htmlFor="best-of-1">1</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="3" id="best-of-3" />
+              <Label htmlFor="best-of-3">3</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="5" id="best-of-5" />
+              <Label htmlFor="best-of-5">5</Label>
             </div>
           </RadioGroup>
         </div>

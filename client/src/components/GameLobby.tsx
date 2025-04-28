@@ -50,7 +50,8 @@ export function GameLobby() {
       nickname: playerName,
       variant: gameSettings.startingScore,
       checkoutType: gameSettings.checkoutType,
-      maxPlayers: gameSettings.maxPlayers
+      maxPlayers: gameSettings.maxPlayers,
+      legsToWin: gameSettings.legsToWin
     };
     socketService.createGame(payload);
   };

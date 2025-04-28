@@ -6,6 +6,7 @@ export interface CreateGamePayload {
     variant: number;
     checkoutType: CheckoutType;
     maxPlayers: number;
+    legsToWin: number;
 }
 
 export interface JoinGamePayload {
