@@ -189,7 +189,7 @@ export default function GameRoom({ params }: { params: { id: string } }) {
             currentPlayerId={currentGame?.currentPlayer?.id || ""}
             startingScore={currentGame!.startingScore}
           />
-
+          
           <ThrowHistory players={currentGame!.players} />
         </div>
       </div>
