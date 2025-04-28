@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
-import { Game } from '../../../server/src/game/types';
 import { CreateGamePayload, JoinGamePayload, ThrowDartPayload, LeaveGamePayload } from '../../../server/src/websockets/types';
+import { Game } from '../../../server/src/game/Game';
 
 const SERVER_URL = 'http://localhost:3001';
 
@@ -55,6 +55,10 @@ class SocketService {
 
     createGame(payload: CreateGamePayload) {
         this.emit('create_game', payload);
+    }
+
+    startGame(payload: { gameId: string }) {
+        this.emit('start_game', payload);
     }
 
     joinGame(payload: JoinGamePayload) {
