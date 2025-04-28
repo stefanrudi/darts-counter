@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import "./App.css";
 import { useGameStore } from "./store/gameStore";
 import { socketService } from "./services/socketService";
 import {
