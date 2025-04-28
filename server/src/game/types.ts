@@ -7,7 +7,8 @@ export interface Throw {
   score: number;
   multiplier: number;
   totalScore: number;
-  timestamp: string;
+  timestamp: string;  
+  valid: boolean;
 }
 
 export interface Player {

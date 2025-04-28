@@ -36,7 +36,10 @@ export function ThrowHistory({ players }: ThrowHistoryProps) {
           playerName: player.name,
           playerId: player.id,
           throws: turnThrows,
-          totalScore: turnThrows.reduce((sum, t) => sum + t.totalScore, 0)
+          totalScore: turnThrows.reduce(
+            (sum, t) => sum + (t.valid ? t.totalScore : 0),
+            0
+          ) // Only count valid throws
         });
       }
     }
@@ -94,18 +97,27 @@ export function ThrowHistory({ players }: ThrowHistoryProps) {
           <div className="space-y-4">
             {filteredTurns.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
-                {throwsByTurn.length === 0 ? "No throws yet" : "No throws for selected player"}
+                {throwsByTurn.length === 0
+                  ? "No throws yet"
+                  : "No throws for selected player"}
               </div>
             ) : (
               filteredTurns.map((turn, index) => (
                 <div key={index} className="border-b pb-2 last:border-0">
                   <div className="flex justify-between items-center mb-1">
                     <div className="font-medium">{turn.playerName}</div>
-                    <div className="text-sm text-muted-foreground">Total: {turn.totalScore}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Total: {turn.totalScore}
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {turn.throws.map((t, i) => (
-                      <div key={i} className="bg-muted p-2 rounded text-center">
+                      <div
+                        key={i}
+                        className={`p-2 rounded text-center ${
+                          t.valid ? "bg-muted" : "bg-red-500 text-white"
+                        }`}
+                      >
                         {getDartLabel(t)}
                       </div>
                     ))}

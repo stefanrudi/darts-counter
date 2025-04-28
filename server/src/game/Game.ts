@@ -92,50 +92,50 @@ export class Game implements GameInterface {
 
     // Calculate total score for this turn
     const turnScore = throws.reduce((total, t) => total + t.totalScore, 0);
-
-    // Check if this would bust (score below 0)
     const newScore = this.currentPlayer!.score - turnScore;
 
-    if (newScore < 0 || (this.checkoutType === "double" && newScore === 1)) {
-      // Bust: Do not update the score and do not advance the turn
-      this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-      this.currentPlayer = { ...this.players[this.currentPlayerIndex] };
-      return this;
-    }
+    // Check for BUST
+    const isBust = newScore < 0 || (this.checkoutType === "double" && newScore === 1);
 
-    // Check if this is a checkout
+    // Check for checkout
     const isCheckout = newScore === 0;
-
-    // Check if checkout is valid (double required for double checkout)
     const isValidCheckout =
       isCheckout &&
       (this.checkoutType === "single" ||
-        (this.checkoutType === "double" && throws[throws.length - 1].multiplier === 2))
+        (this.checkoutType === "double" && throws[throws.length - 1].multiplier === 2));
 
-    // Update player score if valid move
-    if (newScore >= 0 && (!isCheckout || isValidCheckout)) {
-      // Update current player's score and throws
-      this.players = this.players.map((player, index) => {
-        if (index === this.currentPlayerIndex) {
-          return {
-            ...player,
-            score: newScore,
-            throws: [...player.throws, ...throws],
-          }
-        }
-        return player;
-      });
+    // Prepare throws with validity
+    const valid = !isBust && (!isCheckout || isValidCheckout);
+    const updatedThrows = throws.map((t) => ({
+      ...t,
+      valid,
+    }));
 
-      if (isValidCheckout) {
-        this.winner = this.players[this.currentPlayerIndex];
-        this.gameState = "finished";
-        return this;
+    // Update player's throws
+    this.players = this.players.map((player, index) => {
+      if (index === this.currentPlayerIndex) {
+        return {
+          ...player,
+          throws: [...player.throws, ...updatedThrows],
+          score: valid ? newScore : player.score, // Only update score if valid
+        };
       }
+      return player;
+    });
 
+    // Update currentPlayer reference
+    this.currentPlayer = this.players[this.currentPlayerIndex];
+
+    // Handle win
+    if (isValidCheckout) {
+      this.winner = this.currentPlayer;
+      this.gameState = "finished";
+      return this;
     }
-    // Move to the next player
+
+    // Advance turn if not win
     this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-    this.currentPlayer = { ...this.players[this.currentPlayerIndex] };
+    this.currentPlayer = this.players[this.currentPlayerIndex];
 
     return this;
   }
