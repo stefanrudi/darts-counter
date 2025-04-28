@@ -11,6 +11,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { socketService } from "@/services/socketService";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Loader2, Users } from "lucide-react";
+import { WinScreen } from "./WinScreen";
 
 export default function GameRoom({ params }: { params: { id: string } }) {
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
@@ -18,10 +19,10 @@ export default function GameRoom({ params }: { params: { id: string } }) {
   const [throwsInTurn, setThrowsInTurn] = useState<Throw[]>([]);  
   const [isLocalPlayerTurn, setIsLocalPlayerTurn] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false);
-  const [isGameStarted, setIsGameStarted] = useState(false)
-  const [isCreator, setIsCreator] = useState(false)
-  const { currentGame, setCurrentGame, myPlayerId } = useGameStore();
+  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);  
 
+  const { currentGame, setCurrentGame, myPlayerId } = useGameStore();
   const navigate = useNavigate();
 
   // Redirect to the lobby when the game state is cleared
@@ -79,6 +80,12 @@ export default function GameRoom({ params }: { params: { id: string } }) {
     setIsGameStarted(true);
   };
 
+  const handleBackToLobby = () => {
+    if (!currentGame) return;    
+    setCurrentGame(null);
+    navigate("/lobby");
+  };
+
   // Reset current turn
   const handleResetTurn = () => {
     setThrowsInTurn([]);
@@ -110,6 +117,7 @@ export default function GameRoom({ params }: { params: { id: string } }) {
 
   return (
     <div className="container mx-auto p-4">
+      {currentGame.winner && <WinScreen winner={currentGame.winner} onBackToLobby={handleBackToLobby} />}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{currentGame?.name}</h1>        
         <Button variant="outline" onClick={handleLeaveGame} disabled={isLeaving}>
@@ -143,7 +151,7 @@ export default function GameRoom({ params }: { params: { id: string } }) {
                 )}
               </CardContent>
             </Card>
-          ) : isLocalPlayerTurn ? (
+          ) : isLocalPlayerTurn && !currentGame.winner ? (
             // Show active player UI
           <div className="bg-muted p-4 rounded-lg">
             <h2 className="text-xl font-semibold mb-2">Your Turn</h2>
@@ -166,7 +174,7 @@ export default function GameRoom({ params }: { params: { id: string } }) {
               </Button>
             </div>
           </div>
-          ) : (
+          ) : !currentGame.winner? (
             // Show waiting (inactive player) UI
             <Card className="bg-muted">
               <CardHeader>
@@ -179,8 +187,8 @@ export default function GameRoom({ params }: { params: { id: string } }) {
                 </p>
               </CardContent>
             </Card>
-          )}
-          <Dartboard onScore={handleDartboardScore} disabled={!isLocalPlayerTurn} />
+          ) : null}
+          <Dartboard onScore={handleDartboardScore} disabled={!isLocalPlayerTurn || !isGameStarted || !!currentGame.winner} />
         </div>
 
         <div className="space-y-6">
@@ -188,6 +196,8 @@ export default function GameRoom({ params }: { params: { id: string } }) {
             players={currentGame!.players}
             currentPlayerId={currentGame?.currentPlayer?.id || ""}
             startingScore={currentGame!.startingScore}
+            localPlayerId={myPlayerId || ""}
+            winner={currentGame.winner}
           />
           
           <ThrowHistory players={currentGame!.players} />
