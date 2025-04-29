@@ -20,9 +20,9 @@ export function WinScreen({
   // Trigger confetti effect when the component mounts
   useEffect(() => {
     if (showConfetti) {
-      const duration = 3 * 1000;
+      const duration = 5 * 1000;
       const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
 
       function randomInRange(min: number, max: number) {
         return Math.random() * (max - min) + min;

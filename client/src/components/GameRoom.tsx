@@ -140,7 +140,7 @@ export default function GameRoom({ params }: { params: { id: string } }) {
         <WinScreen
           winner={currentGame.winner}
           onBackToLobby={handleBackToLobby}
-          isMatchWinner={!!currentGame.winner}          
+          isMatchWinner={currentGame.winner.id === myPlayerId}          
         />
       )}
       <div className="flex justify-between items-center mb-6">
